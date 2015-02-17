@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="twitter-sentiment-stream" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="SBT" type="JAVA_MODULE" version="4">
+<module external.linked.project.id="learning-spark" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="SBT" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/scala-2.10/classes" />
     <output-test url="file://$MODULE_DIR$/target/scala-2.10/test-classes" />
@@ -17,7 +17,7 @@
       <sourceFolder url="file://$MODULE_DIR$/target/scala-2.10/resource_managed/test" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.10.4:jar" level="project" />
     <orderEntry type="library" name="SBT: aopalliance:aopalliance:1.0:jar" level="project" />
@@ -56,7 +56,6 @@
     <orderEntry type="library" name="SBT: commons-digester:commons-digester:1.8:jar" level="project" />
     <orderEntry type="library" name="SBT: commons-httpclient:commons-httpclient:3.1:jar" level="project" />
     <orderEntry type="library" name="SBT: commons-io:commons-io:2.4:jar" level="project" />
-    <orderEntry type="library" name="SBT: commons-lang:commons-lang:2.5:jar" level="project" />
     <orderEntry type="library" name="SBT: commons-logging:commons-logging:1.1.1:jar" level="project" />
     <orderEntry type="library" name="SBT: commons-net:commons-net:2.2:jar" level="project" />
     <orderEntry type="library" name="SBT: io.netty:netty:3.8.0.Final:jar" level="project" />
@@ -123,7 +122,6 @@
     <orderEntry type="library" name="SBT: org.objenesis:objenesis:1.2:jar" level="project" />
     <orderEntry type="library" name="SBT: org.roaringbitmap:RoaringBitmap:0.4.5:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-compiler:2.10.0:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scala-lang:scala-reflect:2.10.0:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang:scalap:2.10.0:jar" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:jcl-over-slf4j:1.7.5:jar" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:jul-to-slf4j:1.7.5:jar" level="project" />
@@ -143,12 +141,47 @@
     <orderEntry type="library" name="SBT: org.xerial.snappy:snappy-java:1.1.1.6:jar" level="project" />
     <orderEntry type="library" name="SBT: stax:stax-api:1.0.1:jar" level="project" />
     <orderEntry type="library" name="SBT: xmlenc:xmlenc:0.52:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.10.4:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-concurrent_2.10:7.1.0:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-core_2.10:7.1.0:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-effect_2.10:7.1.0:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-common_2.10:2.4.15:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-core_2.10:2.4.15:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-matcher_2.10:2.4.15:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-lang:commons-lang:2.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-logging:commons-logging-api:1.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:uimafit-core:2.1.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:uimaj-core:2.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-aop:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-asm:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-beans:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-context:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-core:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.springframework:spring-expression:3.1.2.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.github.jenshaase.uimascala:uimascala-core_2.10:0.5.0-SNAPSHOT:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:jVinci:2.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:uimaj-adapter-vinci:2.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:uimaj-cpe:2.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.uima:uimaj-tools:2.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-reflect:2.10.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalamacros:paradise_2.10.4:2.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalamacros:quasiquotes_2.10:2.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalaz:scalaz-concurrent_2.10:7.0.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalaz:scalaz-core_2.10:7.0.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalaz:scalaz-effect_2.10:7.0.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalaz.stream:scalaz-stream_2.10:0.4.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.typelevel:scodec-bits_2.10:1.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.googlecode.efficient-java-matrix-library:ejml:0.23:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.io7m.xom:xom:1.2.10:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-lang:commons-lang:2.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: de.jollyday:jollyday:0.4.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.stanford.nlp:stanford-corenlp:3.3.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.stanford.nlp:stanford-corenlp:3.3.1:models:jar" level="project" />
+    <orderEntry type="library" name="SBT: javax.xml.bind:jaxb-api:2.2.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: joda-time:joda-time:2.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-reflect:2.10.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.10.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: xalan:xalan:2.7.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: xerces:xercesImpl:2.8.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: xml-apis:xml-apis:1.3.03:jar" level="project" />
   </component>
 </module>

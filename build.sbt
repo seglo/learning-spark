@@ -1,8 +1,3 @@
-val sparkCore = "org.apache.spark" % "spark-core_2.10" % "1.2.0"
-
-// test deps
-val specs2 = "org.specs2" %% "specs2-core" % "2.4.15" % "test"
-
 lazy val commonSettings = Seq(
   organization := "randonom",
   version := "0.1.0",
@@ -13,6 +8,14 @@ lazy val commonSettings = Seq(
 lazy val `twitter-sentiment-stream` = (project in file(".")).
   settings(commonSettings: _*).
   settings(
-    name := "twitter-sentiment-stream",
-    libraryDependencies ++= Seq(sparkCore, specs2)
+    name := "learning-spark",
+    resolvers ++= Seq(
+      Resolver.sonatypeRepo("public"),
+      Resolver.bintrayRepo("scalaz", "releases")
+    ),
+    libraryDependencies ++= Seq(
+      "org.apache.spark"  %  "spark-core_2.10"    % "1.2.0",
+      "edu.stanford.nlp"  %  "stanford-corenlp"   % "3.3.1",
+      "edu.stanford.nlp"  %  "stanford-corenlp"   % "3.3.1"   classifier "models",
+      "org.specs2"        %% "specs2-core"        % "2.4.15"  % "test")
   )
