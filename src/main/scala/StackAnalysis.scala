@@ -1,23 +1,45 @@
-//import org.apache.spark.SparkContext
-//import org.apache.spark.SparkContext._
-//import org.apache.spark.SparkConf
-//
-//object StackAnalysis {
-//  def main (args: Array[String]) {
-//    val conf = new SparkConf().setAppName("StackAnalysis").setMaster("local")
-//    val sc = new SparkContext(conf)
-//
-//
-//    val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts.xml")
-//    
-//    val lineCount = file.count()
-//    println(s"there are $lineCount lines")
-////    val lines = file.filter(line ⇒ line.contains("clone"))
-////    // Count all instances of clone
-////    val cloneCount = lines.filter(line ⇒ line.contains("clone")).count()
-////    println(s"there are $cloneCount mentions of clone in this script")
-////    // Fetch the MySQL errors as an array of strings
-////    println("lines that contain clone:")
-////    lines.collect().foreach(println)
-//  }
-//}
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+import scala.xml.XML
+
+object StackAnalysis {
+  def main (args: Array[String]) {
+    val conf = new SparkConf().setAppName("StackAnalysis")
+    val sc = new SparkContext(conf)
+
+    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts.xml")
+    val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts1m.xml")
+    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts100k.xml")
+
+    // use random sampling for 10% of data
+    //.sample(false, 0.1, System.currentTimeMillis().toInt)
+    val tagCounts = file
+      .filter(l ⇒ l.contains("row")) // skip XML lines without <row /> elements
+      .flatMap ( l ⇒ {
+        try {
+          val xml = XML.loadString(l)
+          //val id = (xml \ "@Id").text.toLong
+          //val postTypeId = (xml \ "@PostTypeId").text.toInt
+          val tags = (xml \ "@Tags").text
+          val splitTags = if (tags.length == 0) Array[String]() else tags.substring(1,tags.length-1).split("><") 
+          val otherTags = splitTags.diff(List("scala"))
+          if (splitTags.length > otherTags.length)
+            otherTags.map(tag ⇒ (tag, 1))
+          else
+            List[(String, Int)]()
+        } catch {
+          case ex: Exception ⇒ {
+            println(s"failed to parse line: $l")
+            List[(String, Int)]()
+          }
+        }
+      })
+        .reduceByKey(_ + _)
+        .collect.toList.sortBy{case (tag, count) ⇒ -count}//.take(10)
+        //.saveAsTextFile("/home/seglo/stackexchange/stackoverflow.com-Posts/tag-counts.txt")
+        //println(s"there are $lineCount lines") 
+        tagCounts.foreach(println)
+
+  }
+}
