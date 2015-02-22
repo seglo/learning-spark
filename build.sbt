@@ -5,7 +5,7 @@ lazy val commonSettings = Seq(
 )
 
 // intellij sbt plugin will create new modules for each project instantiated here (based on val name)
-lazy val `twitter-sentiment-stream` = (project in file(".")).
+lazy val `learning-spark` = (project in file(".")).
   settings(commonSettings: _*).
   settings(
     name := "learning-spark",
