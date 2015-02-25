@@ -9,8 +9,8 @@ object StackAnalysis {
     val sc = new SparkContext(conf)
 
     //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts.xml")
-    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts1m.xml")
-    val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts100k.xml")
+    val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts1m.xml")
+    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts100k.xml")
 
     // use random sampling for 10% of data
     //.sample(false, 0.1, System.currentTimeMillis().toInt)
@@ -26,7 +26,7 @@ object StackAnalysis {
         } catch {
           case ex: Exception ⇒ {
             println(s"failed to parse line: $l")
-            List[(Int, String)]()
+            Nil
           }
         }
       })
@@ -37,7 +37,7 @@ object StackAnalysis {
         if (splitTags.length > otherTags.length)
           otherTags.map(tag ⇒ (tag, 1))
         else
-          List[(String, Int)]() 
+          Nil
       }}
       .reduceByKey((a, b) ⇒ a + b)
       .collect.toList.sortBy{case (tag, count) ⇒ -count}//.take(10)
