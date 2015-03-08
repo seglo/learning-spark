@@ -3,14 +3,17 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import scala.xml.XML
 
+import CommandLineOptions._
+
 object StackAnalysis {
   def main (args: Array[String]) {
+    val options = CommandLineOptions.getMap(args)
+    
     val conf = new SparkConf().setAppName("StackAnalysis")
     val sc = new SparkContext(conf)
 
-    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts.xml")
-    val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts1m.xml")
-    //val file = sc.textFile("/home/seglo/stackexchange/stackoverflow.com-Posts/Posts100k.xml")
+    val file = sc.textFile(options.get('inputfile)
+      .getOrElse("data/stackexchange/stackoverflow.com-Posts/Posts100k.xml").toString)
 
     // use random sampling for 10% of data
     //.sample(false, 0.1, System.currentTimeMillis().toInt)
