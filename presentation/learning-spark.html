@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+ <style type="text/css">
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+body {
+  font-family: 'Droid Serif';
+}
+h1, h2, h3 {
+  font-family: 'Yanone Kaffeesatz';
+  font-weight: 400;
+  margin-bottom: 0;
+}
+.remark-slide-content h1 { font-size: 3em; }
+.remark-slide-content h2 { font-size: 2em; }
+.remark-slide-content h3 { font-size: 1.6em; }
+.footnote {
+position: absolute;
+bottom: 3em;
+}
+li p { line-height: 1.25em; }
+.red { color: #fa0000; }
+.large { font-size: 2em; }
+a, a > code {
+color: rgb(249, 38, 114);
+       text-decoration: none;
+}
+code {
+  -moz-border-radius: 5px;
+  -web-border-radius: 5px;
+background: #e7e8e2;
+            border-radius: 5px;
+}
+.remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+.remark-code-line-highlighted     { background-color: #373832; }
+.pull-left {
+float: left;
+width: 47%;
+}
+.pull-right {
+float: right;
+width: 47%;
+}
+.pull-right ~ p {
+clear: both;
+}
+#slideshow .slide .content code {
+  font-size: 0.8em;
+}
+#slideshow .slide .content pre code {
+  font-size: 0.9em;
+padding: 15px;
+}
+.inverse {
+background: #272822;
+color: #777872;
+       text-shadow: 0 0 20px #333;
+}
+.inverse h1, .inverse h2 {
+color: #f3f3f3;
+       line-height: 0.8em;
+}
+
+/* Slide-specific styling */
+#slide-inverse .footnote {
+bottom: 12px;
+left: 20px;
+}
+#slide-how .slides {
+  font-size: 0.9em;
+position: absolute;
+top:  151px;
+right: 140px;
+}
+#slide-how .slides h3 {
+  margin-top: 0.2em;
+}
+#slide-how .slides .first, #slide-how .slides .second {
+padding: 1px 20px;
+height: 90px;
+width: 120px;
+       -moz-box-shadow: 0 0 10px #777;
+       -webkit-box-shadow: 0 0 10px #777;
+       box-shadow: 0 0 10px #777;
+}
+#slide-how .slides .first {
+background: #fff;
+position: absolute;
+top: 20%;
+left: 20%;
+      z-index: 1;
+}
+#slide-how .slides .second {
+position: relative;
+background: #fff;
+            z-index: 0;
+}
+
+/* Two-column layout */
+.left-column {
+color: #777;
+width: 20%;
+height: 92%;
+float: left;
+}
+.left-column h2:last-of-type, .left-column h3:last-child {
+color: #000;
+}
+.right-column {
+width: 75%;
+float: right;
+       padding-top: 1em;
+}
+/* Large bullet point text */
+.large-points
+.right-column
+li
+p {
+  font-size: 26px;
+}
+</style>
+  </head>
+  <body>
+    <textarea id="source">
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Spark in Action
+An introduction to Spark through demonstration.
+???
+* This talk will briefly discuss what Spark is and the problem it solves
+* We'll also discuss Spark as a driver application and how it plugs into Hadoop 2.x
+* Finally we'll show off some operations in Spark
+---
+layout: false
+# Why?
+## Disclaimer: I am not a Data Engineer
+.center[![Why?](why-data-science.png)]
+.center[Why? Why? Why! - http://radar.oreilly.com/2013/04/why-why-why.html]
+???
+* Disclaimer:
+* I'm not a data scientist or engineer
+  * So why am I giving a presentation on Spark?
+* This O'Reilly comic depicts an awkward interaction between a data scientist attempting to explain why they're doing what they're doing
+  * *italics* read and explain comic
+    * Purpose of this comic is reinforce the idea that you should first ask why you need the data before you dive into how you can do it.
+  * Thankfully I don't really need a reason for learning Spark and doing the example operations I will show you shortly
+  * But, doing a presentation served as good motivation to do it
+---
+class: large-points
+.left-column[
+## What is spark?
+]
+.right-column[
+###Apache Spark is a fast and general engine for large-scale data processing
+
+- Written in Scala
+
+- API support in **Scala**, Java, and Python
+
+- Built-in distributed in-memory datastore
+
+- Scala REPL for data exploration
+
+<img src="spark-repl.png" alt="Spark REPL" style="width: 100%;"/>
+]
+???
+* Scala is a first class language for Spark, it's written in Scala and runs on the JVM
+
+* The Scala API allows you to implement complex dataflows that use the standard Scala collections DSL functions like map, reduce, filter, etc. instead of just map or reduce steps imposed by Hadoop.
+
+* One of Spark's most impressive features is that data that flows through the pipeline is stored in memory.
+* Large datasets can be spread over a collection of nodes in real memory
+
+* You can launch Spark in a standard Scala REPL experiment with your dataflow in the same way you experiment with your Scala application.
+
+* (REPL image) There's an actual scala prompt at the bottom of this window, but I wanted to show the cool ASCII art!
+* Also.. latest version is 1.3.0!
+---
+class: large-points
+.left-column[
+## What is spark?
+## Isn't this MapReduce?
+]
+.right-column[
+###Spark is up to 100x faster than traditional MapReduce jobs
+
+  * No need to persist between steps
+
+  * Less code
+
+  * Persist large datasets in distributed memory to branch output operations
+]
+???
+* Spark is different from standard MapReduce in a few different ways.
+
+* Hadoop will force you dump to disk and then re-read your intermediate data between reduce steps.  Spark keeps this data in memory which obviously has an enormous performance increase if your dataflow contains many steps.
+
+* The DSL for Scala allows you to write a lot less code than typical mapping and reduce functions.
+* Data flows are usually more involved then a single map and reduce step, so it's easier to implement an algorithm when you have access to the the core functions of the Scala's collection DSL.
+* This allows for a more flexible implementation from a design perspective.
+
+* Spark allows you to temporarily persist a transformation or reduction to memory to use it later in your Spark driver application.
+* This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
+* *find graphic to talk about above point in more detail*
+---
+# References
+
+[Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
