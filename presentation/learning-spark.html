@@ -118,7 +118,6 @@ float: right;
 }
 /* Large bullet point text */
 .large-points
-.right-column
 li
 p {
   font-size: 26px;
@@ -134,6 +133,7 @@ class: center, middle, inverse
 # Spark in Action
 An introduction to Spark through demonstration.
 ???
+* **Remember to pre-cache data on cluster**
 * This talk will briefly discuss what Spark is and the problem it solves
 * We'll also discuss Spark as a driver application and how it plugs into Hadoop 2.x
 * Finally we'll show off some operations in Spark
@@ -153,32 +153,39 @@ layout: false
   * Thankfully I don't really need a reason for learning Spark and doing the example operations I will show you shortly
   * But, doing a presentation served as good motivation to do it
 ---
-class: large-points
 .left-column[
 ## What is spark?
 ]
 .right-column[
-###Apache Spark is a fast and general engine for large-scale data processing
+###Apache Spark is a general purpose computing engine for large-scale data processing
 
-- Written in Scala
+* Written in Scala
 
-- API support in **Scala**, Java, and Python
+* Resilient Distributed Dataset (RDD) - Resilient through *lineage*, Iterable Stream
 
-- Built-in distributed in-memory datastore
+* API support in **Scala**, Java, and Python
 
-- Scala REPL for data exploration
+* Distributed in-memory datastore
+
+* Interactive data exploration through Scala REPL
 
 <img src="spark-repl.png" alt="Spark REPL" style="width: 100%;"/>
 ]
 ???
-* Scala is a first class language for Spark, it's written in Scala and runs on the JVM
+* Scala is a first class language for Spark
+* Spark itself is written in Scala and runs on the JVM.
 
-* The Scala API allows you to implement complex dataflows that use the standard Scala collections DSL functions like map, reduce, filter, etc. instead of just map or reduce steps imposed by Hadoop.
+* "A resilient distributed dataset (RDD) is a read-only collection of objects partitioned across a set of machines that can be rebuilt if a partition is lost."
+  * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute the RDD starting from data in reliable storage. This means that RDDs can always be reconstructed if nodes fail."
+  * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, the RDD has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+  * RDD's are implemented as an iterable stream which makes it easy to plugin to existing language collections API's
 
-* One of Spark's most impressive features is that data that flows through the pipeline is stored in memory.
-* Large datasets can be spread over a collection of nodes in real memory
+* The Spark Scala API allows you to implement complex dataflows that use the standard Scala collections API functions like map, reduce, groupBy, filter, etc.
 
-* You can launch Spark in a standard Scala REPL experiment with your dataflow in the same way you experiment with your Scala application.
+* Large datasets in the process of being transformed are paritioned and stored across a distributed memory store
+
+* You can launch Spark in a modified Scala REPL to experiment with your dataflow in the same way you experiment with your Scala application.
+* Spark is the first system to allow an efficient, general purpose programming language to be used interactively to process large data sets on the cluster.
 
 * (REPL image) There's an actual scala prompt at the bottom of this window, but I wanted to show the cool ASCII art!
 * Also.. latest version is 1.3.0!
@@ -189,30 +196,174 @@ class: large-points
 ## Isn't this MapReduce?
 ]
 .right-column[
-###Spark is up to 100x faster than traditional MapReduce jobs
+###How is Spark any better than MapReduce?
 
-  * No need to persist between steps
+  * No need to flush data between steps which makes **iterative jobs faster**
 
-  * Less code
+  * Cache large datasets in distributed memory to branch output operations and perform **interactive analysis**
 
-  * Persist large datasets in distributed memory to branch output operations
+  * An **intuitive API** that improves code readability and reduces typical MapReduce ceremony
+
+```scala
+val file = spark.textFile("hdfs://...")
+val counts = file.flatMap(line => line.split(" "))
+                 .map(word => (word, 1))
+                 .reduceByKey(_ + _)
+counts.saveAsTextFile("hdfs://...") 
+```
 ]
 ???
-* Spark is different from standard MapReduce in a few different ways.
+* Spark is different from standard MapReduce in a few ways.
 
-* Hadoop will force you dump to disk and then re-read your intermediate data between reduce steps.  Spark keeps this data in memory which obviously has an enormous performance increase if your dataflow contains many steps.
+* Iterative jobs. 
+  * "Many common machine learning algorithms apply a function repeatedly to the same dataset to optimize a parameter" - Berkely paper
+  * To implement these algorithms with Hadoop you're forced to dump to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
 
-* The DSL for Scala allows you to write a lot less code than typical mapping and reduce functions.
-* Data flows are usually more involved then a single map and reduce step, so it's easier to implement an algorithm when you have access to the the core functions of the Scala's collection DSL.
-* This allows for a more flexible implementation from a design perspective.
+* Interactive analysis.
+  * "Hadoop is often used to perform ad-hoc exploratory queries on big datasets, through SQL interfaces such as Pig and Hive. Ideally,
+a user would be able to load a dataset of interest into memory across a number of machines and query it re-peatedly. However, with Hadoop, each query incurs significant latency (tens of seconds) because it runs as a separate MapReduce job and reads data from disk" - Berkely paper
+  * Spark allows you to temporarily persist a transformation or reduction to memory to use it later in your Spark driver application.
+  * This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
+  * *find graphic to talk about above point in more detail*
 
-* Spark allows you to temporarily persist a transformation or reduction to memory to use it later in your Spark driver application.
-* This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
-* *find graphic to talk about above point in more detail*
+* The API for Scala allows you to write a lot less code than the typical Hadoop map and reduce framework.
+  * MapReduce Data flows are usually more involved than a single map and reduce step
+  * So Instead of trying to rework your algorithm to work with MapReduce, Spark plugs into Scala's Collection API to make the implementation easier to write and understand.
+---
+# Driver Application
+* The SparkContext contains information used to run your driver app
+
+  * Configured by env vars, spark-defaults.xml, CLI `spark-shell` & `spark-submit`
+
+  * Singleton
+
+  * Testing.  Change `master` by configuration.
+
+* Data sources can be in memory collections, local filesystem, HDFS, HTTP
+<div style="text-align:center">
+<img src="hdfs-architecture.gif" alt="HDFS Architecture" style="width: 400px;"/>
+</div>
+???
+* The SparkContext is the heart of the Spark implementation in your driver application.
+  * It contains all the information required to run your driver application.
+  * You can configure the SparkContext with environment variables, the spark-defaults.xml, and through CLI with `spark-shell` & `spark-submit`
+  * Singleton.  Only one SparkContext can exist per JVM process. 
+  * Testing is fairly straightforward with Spark because it's easy to change your `master` via configuration.
+    * For example in production you could be using a YARN cluster, but for tests you can use a single core in the same process
+    * Tests must be run in serial because of one SparkContext per JVM rule
+
+* Data sources
+  * The SparkContext Spark operates on a number of familiar data sources
+  * Local filesystem, HDFS, HTTP
+  * It's common to utilize HDFS for Spark application I/O
+
+---
+# SampleApp.scala
+```scala
+/* SimpleApp.scala */
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object SimpleApp {
+  def main(args: Array[String]) {
+    val logFile = "YOUR_SPARK_HOME/README.md" // Should be some file on your system
+    val conf = new SparkConf().setAppName("Simple Application")
+    val sc = new SparkContext(conf)
+    val logData = sc.textFile(logFile, 2).cache()
+    val numAs = logData.filter(line => line.contains("a")).count()
+    val numBs = logData.filter(line => line.contains("b")).count()
+    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
+  }
+}
+```
+https://spark.apache.org/docs/latest/quick-start.html
+???
+* Sample Application straight from the Spark documentation quick start guide 
+* What's in this example?
+  * Instantiate a SparkContext
+  * Load in the Spark README markdown file as sample data from the filesystem
+  * `Suggest` that Spark `cache` the dataset in cluster memory so multiple operations can be performed on it.
+  * Count the number of lines that contain a's and lines that contain b's
+---
+# Stack Exchange dataset 
+<img src="stackexchange.png" alt="StackExchange" style="width:200px;"/>
+
+*"All community-contributed content on Stack Exchange is licensed under the Creative Commons BY-SA 3.0 license. As part of our commitment to that, we release a quarterly dump of all user-contributed data (after carefully sanitizing it to protect user private data, of course)."*
+http://blog.stackexchange.com/category/cc-wiki-dump/
+
+StackOverflow.com data:
+
+```bash
+$ du stackoverflow.com*/*.xml --total --block-size=G
+1G      stackoverflow.com-Badges/Badges.xml
+8G      stackoverflow.com-Comments/Comments.xml
+46G     stackoverflow.com-PostHistory/PostHistory.xml
+1G      stackoverflow.com-PostLinks/PostLinks.xml
+29G     stackoverflow.com-Posts/Posts.xml
+1G      stackoverflow.com-Tags/Tags.xml
+1G      stackoverflow.com-Users/Users.xml
+7G      stackoverflow.com-Votes/Votes.xml
+90G     total
+``` 
+???
+* The examples I'm going to show you tonight are based StackOver flow data
+
+* Every quarter, the Stack Exchange network releases all of its data for all of its sites under a Creative Commons license
+* The dataset contains all Stack Exchange site posts, comments, badges, links, history, votes, users, and tags.
+* It's scrubbed of all personally identifying information
+* The dataset is available as a BitTorrent from the Internet Archive
+* It's serialized as XML with one record per line
+
+* For my demo I will be working exclusively with StackOverflow.com data which comes out to 90GB of uncompressed XML data
+  * Of that I will only be working with the Posts.xml data which comes out to a paltry 29GB
+  * (but it's just XML so take that with a grain of salt)
+* Not a huge dataset, but for my limited computational resources it does the trick!
+---
+class: large-points
+# ScalaTagCount Demo in Standalone mode
+
+## hulk
+
+* Intel® Core™ i7-2600K CPU @ 3.40GHz × 8
+
+* 16GB RAM
+
+* ATA OCZ-VERTEX3 SSD
+
+<img src="hulk.jpg" alt="Hulk" style="width:200px"/ >
+???
+* Although spark has lots of cluster support, you can just as easily run it in on a single system utilizing all cores and memory you have available.
+* You can run Spark Applications with a single library download and no other infrastructure setup
+* This makes it easy to develop and troubleshoot Spark Applications in isolation
+
+* *Show StackAnalysis.scala*
+
+* Count all distinct tags that are associated with StackOverflow questions that are tagged with `Scala`
+* *Describe each step of data flow*
+
+* *Run StackAnalysis.scala* and show some of the output.. come back to results at end of presentation
+---
+# Spark on the cluster
+
+## Spark standalone
+## YARN
+## Mesos
+---
+# Demo - `spark-shell` on mesos cluster
 ---
 # References
 
-[Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+* [Spark: Cluster Computing with Working Sets](https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Spark-Cluster-Computing-with-Working-Sets.pdf) - University of Berkely paper introducing Spark - Much of the introduction of this talk is paraphrased from this paper.
+* [spark-workshop by Dean Wampler](https://github.com/deanwampler/spark-workshop) - Spark impl. examples in a Typesafe activator project
+* [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/) - 
+* [Google Cloud Compute](https://cloud.google.com/compute/) 
+* [Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+* [Mesosphere in the Cloud](http://mesosphere.com/docs/getting-started/) - Tutorials to setup mesosphere on IaaS (Amazon, DigitalOcean, Google)
+  * [Google Cloud Compute setup](http://mesosphere.com/docs/getting-started/cloud/google/)
+  * [Running Spark on Mesos](http://spark.apache.org/docs/1.3.0/running-on-mesos.html) - Mesosphere docs are out-of-date, use this once mesosphere sets up cluster for you.
+* [Spark atop Mesos on Google Cloud Platform](http://ceteri.blogspot.ca/2014/09/spark-atop-mesos-on-google-cloud.html)
+* [HDFS Architecture](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html)
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
