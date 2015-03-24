@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>learning-spark</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
  <style type="text/css">
 @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
@@ -321,7 +321,7 @@ $ du stackoverflow.com*/*.xml --total --block-size=G
 * Not a huge dataset, but for my limited computational resources it does the trick!
 ---
 class: large-points
-# ScalaTagCount Demo in Standalone mode
+# ScalaTagCount demo in Standalone mode
 
 ## hulk
 
@@ -344,26 +344,93 @@ class: large-points
 
 * *Run StackAnalysis.scala* and show some of the output.. come back to results at end of presentation
 ---
+class: large-points
 # Spark on the cluster
 
-## Spark standalone
-## YARN
-## Mesos
+## Spark supports lots of cluster connectivity options
+
+* Spark Standalone <img src="spark-logo.png"  style="height: 30px;"/>
+* Hadoop YARN <img src="hadoop-logo.png"  style="height: 30px;"/>
+* Mesos <img src="mesos-logo.png" style="height: 30px;" />
+
+<div style="text-align:center">
+<img src="spark-cluster-overview.png" alt="Spark Cluster Overview" />
+http://spark.apache.org/docs/latest/running-on-mesos.html
+</div> 
+???
+* Spark was designed to run in a clustered environment
+
+* You can compile or download specific binaries of Spark that run on each of their supported environments.
+
+* With the Spark Standalone you can setup a Spark cluster without any dependency on any other Resource Negotiator's 
+* This is probably the best option for quick & dirty solutions, but if you want to build a cluster that other applications can run upon (like MapReduce), then it's a good idea to consider some of the other options
+
+* Some other cluster options include YARN and Mesos.
+* YARN is what encompasses the new Resource and Node Manager in the Hadoop 2.x ecosystem.  The purpose of YARN is to decouple these responsibilities from the daemon's of the traditional Hadoop ecosystem
+
+* Apache Mesos is similar to yarn, but goes a step further in unifying a cluster into a single pool of resources that applications can utilize.
+* "Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively."
 ---
-# Demo - `spark-shell` on mesos cluster
+## Apache Mesos cluster demo
+
+### StackOverflow.com posts in `.cache()` using `spark-shell`
+
+### learning-spark project
+
+* Google Cloud Compute (free tier)
+* 1 master VM and 3 slave VM's, 4 total, `n1-standard-2` instance type
+* 2 vCPU each, 8 vCPU total
+* 7.5 GB RAM each, 30GB RAM total
+* HDFS, 500 GB each, 2 TB total
+
+<br />
+```bash
+$ gcloud compute instances list --project learning-spark
+NAME                 ZONE          MACHINE_TYPE  INTERNAL_IP    EXTERNAL_IP    STATUS
+development-5159-d3d us-central1-a n1-standard-2 10.217.7.180   146.148.36.161 RUNNING
+development-5159-b61 us-central1-a n1-standard-2 10.144.195.205 104.197.26.0   RUNNING
+development-5159-d9  us-central1-a n1-standard-2 10.173.40.36   104.197.11.201 RUNNING
+development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.35.65  RUNNING
+```
+???
+* I chose to use Google Cloud Compute amazing deal of $300 or 60 days (whichever runs out first) to use nearly anything you want available on their platform
+  * The main restrictions are that you can only have 8 vCPU total and the `n1-standard-2` image is the largest VM you can setup.
+  * If you don't have a `hulk` laying around or want to play with a cluster setup then this is an excellent option.
+* I setup an Apache Mesos cluster with the help of Mesosphere.
+  * Mesosphere has excellent guides to setup Mesos clusters on various Infrastructure as as Service providers like Google Cloud Compute, Amazon Web Services, and Digital Ocean.
+  * They even have scripts that allow you to automate the setup of these environments if you provide them with your provider access key
+  * All I had to do to accomodate my setup was attach larger disks and update HDFS config to use them
+
+* Show Google Cloud Computer console
+* Show HDFS report?
+* Show spark-shell console with cached dataset
+* ** show hulk output **
 ---
 # References
 
+### Spark
+* [Spark Documentation](https://spark.apache.org/docs/latest/)
 * [Spark: Cluster Computing with Working Sets](https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Spark-Cluster-Computing-with-Working-Sets.pdf) - University of Berkely paper introducing Spark - Much of the introduction of this talk is paraphrased from this paper.
-* [spark-workshop by Dean Wampler](https://github.com/deanwampler/spark-workshop) - Spark impl. examples in a Typesafe activator project
-* [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/) - 
-* [Google Cloud Compute](https://cloud.google.com/compute/) 
+* **[`spark-workshop` by Dean Wampler](https://github.com/deanwampler/spark-workshop) - Spark impl. examples in a Typesafe activator project**
 * [Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+
+### Clusters
+
+* [Google Cloud Compute](https://cloud.google.com/compute/) 
 * [Mesosphere in the Cloud](http://mesosphere.com/docs/getting-started/) - Tutorials to setup mesosphere on IaaS (Amazon, DigitalOcean, Google)
   * [Google Cloud Compute setup](http://mesosphere.com/docs/getting-started/cloud/google/)
   * [Running Spark on Mesos](http://spark.apache.org/docs/1.3.0/running-on-mesos.html) - Mesosphere docs are out-of-date, use this once mesosphere sets up cluster for you.
 * [Spark atop Mesos on Google Cloud Platform](http://ceteri.blogspot.ca/2014/09/spark-atop-mesos-on-google-cloud.html)
+* [Running Spark on Mesos](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
+* [YARN Architecture](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
 * [HDFS Architecture](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html)
+* [`docker-spark` by SequenceIQ](https://github.com/sequenceiq/docker-spark) - If you want to play around with a YARN cluster config
+
+### Data
+
+* [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/)
+
+
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
