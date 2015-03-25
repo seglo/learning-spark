@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>learning-spark</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+ <style type="text/css">
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+body {
+  font-family: 'Droid Serif';
+}
+h1, h2, h3 {
+  font-family: 'Yanone Kaffeesatz';
+  font-weight: 400;
+  margin-bottom: 0;
+}
+.remark-slide-content h1 { font-size: 3em; }
+.remark-slide-content h2 { font-size: 2em; }
+.remark-slide-content h3 { font-size: 1.6em; }
+.footnote {
+position: absolute;
+bottom: 3em;
+}
+li p { line-height: 1.25em; }
+.red { color: #fa0000; }
+.large { font-size: 2em; }
+a, a > code {
+color: rgb(249, 38, 114);
+       text-decoration: none;
+}
+code {
+  -moz-border-radius: 5px;
+  -web-border-radius: 5px;
+background: #e7e8e2;
+            border-radius: 5px;
+}
+.remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+.remark-code-line-highlighted     { background-color: #373832; }
+.pull-left {
+float: left;
+width: 47%;
+}
+.pull-right {
+float: right;
+width: 47%;
+}
+.pull-right ~ p {
+clear: both;
+}
+#slideshow .slide .content code {
+  font-size: 0.8em;
+}
+#slideshow .slide .content pre code {
+  font-size: 0.9em;
+padding: 15px;
+}
+.inverse {
+background: #272822;
+color: #777872;
+       text-shadow: 0 0 20px #333;
+}
+.inverse h1, .inverse h2 {
+color: #f3f3f3;
+       line-height: 0.8em;
+}
+
+/* Slide-specific styling */
+#slide-inverse .footnote {
+bottom: 12px;
+left: 20px;
+}
+#slide-how .slides {
+  font-size: 0.9em;
+position: absolute;
+top:  151px;
+right: 140px;
+}
+#slide-how .slides h3 {
+  margin-top: 0.2em;
+}
+#slide-how .slides .first, #slide-how .slides .second {
+padding: 1px 20px;
+height: 90px;
+width: 120px;
+       -moz-box-shadow: 0 0 10px #777;
+       -webkit-box-shadow: 0 0 10px #777;
+       box-shadow: 0 0 10px #777;
+}
+#slide-how .slides .first {
+background: #fff;
+position: absolute;
+top: 20%;
+left: 20%;
+      z-index: 1;
+}
+#slide-how .slides .second {
+position: relative;
+background: #fff;
+            z-index: 0;
+}
+
+/* Two-column layout */
+.left-column {
+color: #777;
+width: 20%;
+height: 92%;
+float: left;
+}
+.left-column h2:last-of-type, .left-column h3:last-child {
+color: #000;
+}
+.right-column {
+width: 75%;
+float: right;
+       padding-top: 1em;
+}
+/* Large bullet point text */
+.large-points
+li
+p {
+  font-size: 26px;
+}
+</style>
+  </head>
+  <body>
+    <textarea id="source">
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Spark in Action
+An introduction to Spark through demonstration.
+???
+* **Remember to pre-cache data on cluster**
+* This talk will briefly discuss what Spark is and the problem it solves
+* We'll also discuss Spark as a driver application and how it plugs into Hadoop 2.x
+* Finally we'll show off some operations in Spark
+---
+layout: false
+# Why?
+## Disclaimer: I am not a Data Engineer
+.center[![Why?](why-data-science.png)]
+.center[Why? Why? Why! - http://radar.oreilly.com/2013/04/why-why-why.html]
+???
+* Disclaimer:
+* I'm not a data scientist or engineer
+  * So why am I giving a presentation on Spark?
+* This O'Reilly comic depicts an awkward interaction between a data scientist attempting to explain why they're doing what they're doing
+  * *italics* read and explain comic
+    * Purpose of this comic is reinforce the idea that you should first ask why you need the data before you dive into how you can do it.
+  * Thankfully I don't really need a reason for learning Spark and doing the example operations I will show you shortly
+  * But, doing a presentation served as good motivation to do it
+---
+.left-column[
+## What is spark?
+]
+.right-column[
+###Apache Spark is a general purpose computing engine for large-scale data processing
+
+* Written in Scala
+
+* Resilient Distributed Dataset (RDD) - Resilient through *lineage*, Iterable Stream
+
+* API support in **Scala**, Java, and Python
+
+* Distributed in-memory datastore
+
+* Interactive data exploration through Scala REPL
+
+<img src="spark-repl.png" alt="Spark REPL" style="width: 100%;"/>
+]
+???
+* Scala is a first class language for Spark
+* Spark itself is written in Scala and runs on the JVM.
+
+* "A resilient distributed dataset (RDD) is a read-only collection of objects partitioned across a set of machines that can be rebuilt if a partition is lost."
+  * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute the RDD starting from data in reliable storage. This means that RDDs can always be reconstructed if nodes fail."
+  * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, the RDD has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+  * RDD's are implemented as an iterable stream which makes it easy to plugin to existing language collections API's
+
+* The Spark Scala API allows you to implement complex dataflows that use the standard Scala collections API functions like map, reduce, groupBy, filter, etc.
+
+* Large datasets in the process of being transformed are paritioned and stored across a distributed memory store
+
+* You can launch Spark in a modified Scala REPL to experiment with your dataflow in the same way you experiment with your Scala application.
+* Spark is the first system to allow an efficient, general purpose programming language to be used interactively to process large data sets on the cluster.
+
+* (REPL image) There's an actual scala prompt at the bottom of this window, but I wanted to show the cool ASCII art!
+* Also.. latest version is 1.3.0!
+---
+class: large-points
+.left-column[
+## What is spark?
+## Isn't this MapReduce?
+]
+.right-column[
+###How is Spark any better than MapReduce?
+
+  * No need to flush data between steps which makes **iterative jobs faster**
+
+  * Cache large datasets in distributed memory to branch output operations and perform **interactive analysis**
+
+  * An **intuitive API** that improves code readability and reduces typical MapReduce ceremony
+
+```scala
+val file = spark.textFile("hdfs://...")
+val counts = file.flatMap(line => line.split(" "))
+                 .map(word => (word, 1))
+                 .reduceByKey(_ + _)
+counts.saveAsTextFile("hdfs://...") 
+```
+]
+???
+* Spark is different from standard MapReduce in a few ways.
+
+* Iterative jobs. 
+  * "Many common machine learning algorithms apply a function repeatedly to the same dataset to optimize a parameter" - Berkely paper
+  * To implement these algorithms with Hadoop you're forced to dump to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
+
+* Interactive analysis.
+  * "Hadoop is often used to perform ad-hoc exploratory queries on big datasets, through SQL interfaces such as Pig and Hive. Ideally,
+a user would be able to load a dataset of interest into memory across a number of machines and query it re-peatedly. However, with Hadoop, each query incurs significant latency (tens of seconds) because it runs as a separate MapReduce job and reads data from disk" - Berkely paper
+  * Spark allows you to temporarily persist a transformation or reduction to memory to use it later in your Spark driver application.
+  * This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
+  * *find graphic to talk about above point in more detail*
+
+* The API for Scala allows you to write a lot less code than the typical Hadoop map and reduce framework.
+  * MapReduce Data flows are usually more involved than a single map and reduce step
+  * So Instead of trying to rework your algorithm to work with MapReduce, Spark plugs into Scala's Collection API to make the implementation easier to write and understand.
+---
+# Driver Application
+* The SparkContext contains information used to run your driver app
+
+  * Configured by env vars, spark-defaults.xml, CLI `spark-shell` & `spark-submit`
+
+  * Singleton
+
+  * Testing.  Change `master` by configuration.
+
+* Data sources can be in memory collections, local filesystem, HDFS, HTTP
+<div style="text-align:center">
+<img src="hdfs-architecture.gif" alt="HDFS Architecture" style="width: 400px;"/>
+</div>
+???
+* The SparkContext is the heart of the Spark implementation in your driver application.
+  * It contains all the information required to run your driver application.
+  * You can configure the SparkContext with environment variables, the spark-defaults.xml, and through CLI with `spark-shell` & `spark-submit`
+  * Singleton.  Only one SparkContext can exist per JVM process. 
+  * Testing is fairly straightforward with Spark because it's easy to change your `master` via configuration.
+    * For example in production you could be using a YARN cluster, but for tests you can use a single core in the same process
+    * Tests must be run in serial because of one SparkContext per JVM rule
+
+* Data sources
+  * The SparkContext Spark operates on a number of familiar data sources
+  * Local filesystem, HDFS, HTTP
+  * It's common to utilize HDFS for Spark application I/O
+
+---
+# SampleApp.scala
+```scala
+/* SimpleApp.scala */
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object SimpleApp {
+  def main(args: Array[String]) {
+    val logFile = "YOUR_SPARK_HOME/README.md" // Should be some file on your system
+    val conf = new SparkConf().setAppName("Simple Application")
+    val sc = new SparkContext(conf)
+    val logData = sc.textFile(logFile, 2).cache()
+    val numAs = logData.filter(line => line.contains("a")).count()
+    val numBs = logData.filter(line => line.contains("b")).count()
+    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
+  }
+}
+```
+https://spark.apache.org/docs/latest/quick-start.html
+???
+* Sample Application straight from the Spark documentation quick start guide 
+* What's in this example?
+  * Instantiate a SparkContext
+  * Load in the Spark README markdown file as sample data from the filesystem
+  * `Suggest` that Spark `cache` the dataset in cluster memory so multiple operations can be performed on it.
+  * Count the number of lines that contain a's and lines that contain b's
+---
+# Stack Exchange dataset 
+<img src="stackexchange.png" alt="StackExchange" style="width:200px;"/>
+
+*"All community-contributed content on Stack Exchange is licensed under the Creative Commons BY-SA 3.0 license. As part of our commitment to that, we release a quarterly dump of all user-contributed data (after carefully sanitizing it to protect user private data, of course)."*
+http://blog.stackexchange.com/category/cc-wiki-dump/
+
+StackOverflow.com data:
+
+```bash
+$ du stackoverflow.com*/*.xml --total --block-size=G
+1G      stackoverflow.com-Badges/Badges.xml
+8G      stackoverflow.com-Comments/Comments.xml
+46G     stackoverflow.com-PostHistory/PostHistory.xml
+1G      stackoverflow.com-PostLinks/PostLinks.xml
+29G     stackoverflow.com-Posts/Posts.xml
+1G      stackoverflow.com-Tags/Tags.xml
+1G      stackoverflow.com-Users/Users.xml
+7G      stackoverflow.com-Votes/Votes.xml
+90G     total
+``` 
+???
+* The examples I'm going to show you tonight are based StackOver flow data
+
+* Every quarter, the Stack Exchange network releases all of its data for all of its sites under a Creative Commons license
+* The dataset contains all Stack Exchange site posts, comments, badges, links, history, votes, users, and tags.
+* It's scrubbed of all personally identifying information
+* The dataset is available as a BitTorrent from the Internet Archive
+* It's serialized as XML with one record per line
+
+* For my demo I will be working exclusively with StackOverflow.com data which comes out to 90GB of uncompressed XML data
+  * Of that I will only be working with the Posts.xml data which comes out to a paltry 29GB
+  * (but it's just XML so take that with a grain of salt)
+* Not a huge dataset, but for my limited computational resources it does the trick!
+---
+class: large-points
+# ScalaTagCount demo in Standalone mode
+
+## hulk
+
+* Intel® Core™ i7-2600K CPU @ 3.40GHz × 8
+
+* 16GB RAM
+
+* ATA OCZ-VERTEX3 SSD
+
+<img src="hulk.jpg" alt="Hulk" style="width:200px"/ >
+???
+* Although spark has lots of cluster support, you can just as easily run it in on a single system utilizing all cores and memory you have available.
+* You can run Spark Applications with a single library download and no other infrastructure setup
+* This makes it easy to develop and troubleshoot Spark Applications in isolation
+
+* *Show StackAnalysis.scala*
+
+* Count all distinct tags that are associated with StackOverflow questions that are tagged with `Scala`
+* *Describe each step of data flow*
+
+* *Run StackAnalysis.scala* and show some of the output.. come back to results at end of presentation
+---
+class: large-points
+# Spark on the cluster
+
+## Spark supports lots of cluster connectivity options
+
+* Spark Standalone <img src="spark-logo.png"  style="height: 30px;"/>
+* Hadoop YARN <img src="hadoop-logo.png"  style="height: 30px;"/>
+* Mesos <img src="mesos-logo.png" style="height: 30px;" />
+
+<div style="text-align:center">
+<img src="spark-cluster-overview.png" alt="Spark Cluster Overview" />
+http://spark.apache.org/docs/latest/running-on-mesos.html
+</div> 
+???
+* Spark was designed to run in a clustered environment
+
+* You can compile or download specific binaries of Spark that run on each of their supported environments.
+
+* With the Spark Standalone you can setup a Spark cluster without any dependency on any other Resource Negotiator's 
+* This is probably the best option for quick & dirty solutions, but if you want to build a cluster that other applications can run upon (like MapReduce), then it's a good idea to consider some of the other options
+
+* Some other cluster options include YARN and Mesos.
+* YARN is what encompasses the new Resource and Node Manager in the Hadoop 2.x ecosystem.  The purpose of YARN is to decouple these responsibilities from the daemon's of the traditional Hadoop ecosystem
+
+* Apache Mesos is similar to yarn, but goes a step further in unifying a cluster into a single pool of resources that applications can utilize.
+* "Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively."
+---
+## Apache Mesos cluster demo
+
+### StackOverflow.com posts in `.cache()` using `spark-shell`
+
+### learning-spark project
+
+* Google Cloud Compute (free tier)
+* 1 master VM and 3 slave VM's, 4 total, `n1-standard-2` instance type
+* 2 vCPU each, 8 vCPU total
+* 7.5 GB RAM each, 30GB RAM total
+* HDFS, 500 GB each, 2 TB total
+
+<br />
+```bash
+$ gcloud compute instances list --project learning-spark
+NAME                 ZONE          MACHINE_TYPE  INTERNAL_IP    EXTERNAL_IP    STATUS
+development-5159-d3d us-central1-a n1-standard-2 10.217.7.180   146.148.36.161 RUNNING
+development-5159-b61 us-central1-a n1-standard-2 10.144.195.205 104.197.26.0   RUNNING
+development-5159-d9  us-central1-a n1-standard-2 10.173.40.36   104.197.11.201 RUNNING
+development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.35.65  RUNNING
+```
+???
+* I chose to use Google Cloud Compute amazing deal of $300 or 60 days (whichever runs out first) to use nearly anything you want available on their platform
+  * The main restrictions are that you can only have 8 vCPU total and the `n1-standard-2` image is the largest VM you can setup.
+  * If you don't have a `hulk` laying around or want to play with a cluster setup then this is an excellent option.
+* I setup an Apache Mesos cluster with the help of Mesosphere.
+  * Mesosphere has excellent guides to setup Mesos clusters on various Infrastructure as as Service providers like Google Cloud Compute, Amazon Web Services, and Digital Ocean.
+  * They even have scripts that allow you to automate the setup of these environments if you provide them with your provider access key
+  * All I had to do to accomodate my setup was attach larger disks and update HDFS config to use them
+
+* Show Google Cloud Computer console
+* Show HDFS report?
+* Show spark-shell console with cached dataset
+* ** show hulk output **
+---
+# References
+
+### Spark
+* [Spark Documentation](https://spark.apache.org/docs/latest/)
+* [Spark: Cluster Computing with Working Sets](https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Spark-Cluster-Computing-with-Working-Sets.pdf) - University of Berkely paper introducing Spark - Much of the introduction of this talk is paraphrased from this paper.
+* **[`spark-workshop` by Dean Wampler](https://github.com/deanwampler/spark-workshop) - Spark impl. examples in a Typesafe activator project**
+* [Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+
+### Clusters
+
+* [Google Cloud Compute](https://cloud.google.com/compute/) 
+* [Mesosphere in the Cloud](http://mesosphere.com/docs/getting-started/) - Tutorials to setup mesosphere on IaaS (Amazon, DigitalOcean, Google)
+  * [Google Cloud Compute setup](http://mesosphere.com/docs/getting-started/cloud/google/)
+  * [Running Spark on Mesos](http://spark.apache.org/docs/1.3.0/running-on-mesos.html) - Mesosphere docs are out-of-date, use this once mesosphere sets up cluster for you.
+* [Spark atop Mesos on Google Cloud Platform](http://ceteri.blogspot.ca/2014/09/spark-atop-mesos-on-google-cloud.html)
+* [Running Spark on Mesos](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
+* [YARN Architecture](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
+* [HDFS Architecture](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html)
+* [`docker-spark` by SequenceIQ](https://github.com/sequenceiq/docker-spark) - If you want to play around with a YARN cluster config
+
+### Data
+
+* [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/)
+
+
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

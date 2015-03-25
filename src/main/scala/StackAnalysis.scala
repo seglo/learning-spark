@@ -12,8 +12,12 @@ object StackAnalysis {
     val conf = new SparkConf().setAppName("StackAnalysis")
     val sc = new SparkContext(conf)
 
-    val file = sc.textFile(options.get('inputfile)
+    work(sc, options.get('inputfile)
       .getOrElse("data/stackexchange/stackoverflow.com-Posts/Posts100k.xml").toString)
+  }
+
+  def work(sc: SparkContext, inputPath: String) {
+    val file = sc.textFile(inputPath)
 
     // use random sampling for 10% of data
     //.sample(false, 0.1, System.currentTimeMillis().toInt)
