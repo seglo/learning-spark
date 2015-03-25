@@ -17,6 +17,8 @@ object CommandLineOptions {
         case Nil ⇒ map
         case "--input-file" :: value :: tail ⇒
           nextOption(map ++ Map('inputfile -> value), tail)
+        case "--output-file" :: value :: tail ⇒
+          nextOption(map ++ Map('outputfile -> value), tail)
         case option :: tail ⇒ println("Unknown option "+option) 
           exit(1) 
       }      

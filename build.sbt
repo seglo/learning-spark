@@ -14,6 +14,7 @@ lazy val `learning-spark` = (project in file(".")).
       Resolver.bintrayRepo("scalaz", "releases")
     ),
     libraryDependencies ++= Seq(
+      "commons-io"        %  "commons-io"         % "2.4",
       "org.apache.spark"  %  "spark-core_2.10"    % "1.2.0",
       "edu.stanford.nlp"  %  "stanford-corenlp"   % "3.3.1",
       "edu.stanford.nlp"  %  "stanford-corenlp"   % "3.3.1"   classifier "models",
