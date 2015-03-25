@@ -133,10 +133,14 @@ class: center, middle, inverse
 # Spark in Action
 An introduction to Spark through demonstration.
 ???
-* **Remember to pre-cache data on cluster**
-* This talk will briefly discuss what Spark is and the problem it solves
-* We'll also discuss Spark as a driver application and how it plugs into Hadoop 2.x
+* *Remember to pre-cache data on cluster*
+* This talk will briefly discuss what Spark is and contrast it to its predecessor technologies
+* We'll also discuss Spark as a driver application and how you can run it in a cluster environment such as Hadoop 2.x YARN and Apache Mesos
 * Finally we'll show off some operations in Spark
+
+* Can I get a show of hands to see who has worked with Hadoop?
+
+* What about spark?
 ---
 layout: false
 # Why?
@@ -147,11 +151,12 @@ layout: false
 * Disclaimer:
 * I'm not a data scientist or engineer
   * So why am I giving a presentation on Spark?
-* This O'Reilly comic depicts an awkward interaction between a data scientist attempting to explain why they're doing what they're doing
-  * *italics* read and explain comic
-    * Purpose of this comic is reinforce the idea that you should first ask why you need the data before you dive into how you can do it.
-  * Thankfully I don't really need a reason for learning Spark and doing the example operations I will show you shortly
-  * But, doing a presentation served as good motivation to do it
+  * I'm a generalist.  I consider myself full stack.  Hadoop and now Spark have interested me for a long time and I figured that one way to help motivate me to follow through with that learning was present on it!
+  * So here I am
+
+* This comic is reinforcing the idea that before you invest too much time on a particular technology you really need to ask yourself what you're trying to get out of it.
+  * In my case it's just an excuse to give me a better understanding of the space and I hope as a consequence you all get something out of it too.
+
 ---
 .left-column[
 ## What is spark?
@@ -161,7 +166,7 @@ layout: false
 
 * Written in Scala
 
-* Resilient Distributed Dataset (RDD) - Resilient through *lineage*, Iterable Stream
+* Resilient Distributed Dataset (RDD) - Resilient through *lineage* (RDDs can always be reconstructed if nodes fail.)
 
 * API support in **Scala**, Java, and Python
 
@@ -172,17 +177,22 @@ layout: false
 <img src="spark-repl.png" alt="Spark REPL" style="width: 100%;"/>
 ]
 ???
-* Scala is a first class language for Spark
+* Apache Spark is a general purpose computing engine for large-scale data processing
 * Spark itself is written in Scala and runs on the JVM.
 
-* "A resilient distributed dataset (RDD) is a read-only collection of objects partitioned across a set of machines that can be rebuilt if a partition is lost."
-  * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute the RDD starting from data in reliable storage. This means that RDDs can always be reconstructed if nodes fail."
-  * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, the RDD has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+* One of the core components of Spark is the Reslient Distributed Dataset
+  * Definition from the initial Spark paper from Berkeley:
+  * "A resilient distributed dataset (RDD) is a read-only collection of objects partitioned across a set of machines that can be rebuilt if a partition is lost."
+
+  * A cool thing about RDD's is how they respond to failure (i.e. a cluster of the node dies).  The solution is a technique they refer to as lineage.  Another definition from the Spark paper:
+  * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute it starting from data in reliable storage. This means that they can always be reconstructed if nodes fail."
+  * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, it has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+
   * RDD's are implemented as an iterable stream which makes it easy to plugin to existing language collections API's
 
 * The Spark Scala API allows you to implement complex dataflows that use the standard Scala collections API functions like map, reduce, groupBy, filter, etc.
 
-* Large datasets in the process of being transformed are paritioned and stored across a distributed memory store
+* After each step in the dataflow the intermediate data is stored across a distributed memory store
 
 * You can launch Spark in a modified Scala REPL to experiment with your dataflow in the same way you experiment with your Scala application.
 * Spark is the first system to allow an efficient, general purpose programming language to be used interactively to process large data sets on the cluster.
@@ -216,19 +226,20 @@ counts.saveAsTextFile("hdfs://...")
 * Spark is different from standard MapReduce in a few ways.
 
 * Iterative jobs. 
-  * "Many common machine learning algorithms apply a function repeatedly to the same dataset to optimize a parameter" - Berkely paper
+  * Again, from the Berkley paper:
+  * "Many common machine learning algorithms apply a function repeatedly to the same dataset to optimize a parameter"
   * To implement these algorithms with Hadoop you're forced to dump to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
 
 * Interactive analysis.
+  * The Berkley paper states
   * "Hadoop is often used to perform ad-hoc exploratory queries on big datasets, through SQL interfaces such as Pig and Hive. Ideally,
-a user would be able to load a dataset of interest into memory across a number of machines and query it re-peatedly. However, with Hadoop, each query incurs significant latency (tens of seconds) because it runs as a separate MapReduce job and reads data from disk" - Berkely paper
-  * Spark allows you to temporarily persist a transformation or reduction to memory to use it later in your Spark driver application.
+a user would be able to load a dataset of interest into memory across a number of machines and query it repeatedly. However, with Hadoop, each query incurs significant latency (tens of seconds) because it runs as a separate MapReduce job and reads data from disk"
+  * Spark allows you to temporarily persist, or 'cache', a transformation or reduction to memory to use it later in your application.
   * This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
-  * *find graphic to talk about above point in more detail*
 
-* The API for Scala allows you to write a lot less code than the typical Hadoop map and reduce framework.
+* The API for Scala allows you to write a lot less code than is typical on the Hadoop map and reduce framework.
   * MapReduce Data flows are usually more involved than a single map and reduce step
-  * So Instead of trying to rework your algorithm to work with MapReduce, Spark plugs into Scala's Collection API to make the implementation easier to write and understand.
+  * So Instead of trying to rework your algorithm to work with the MapReduce framework, Spark plugs into Scala's Collection API to make the implementation easier to write, read, and reason about.
 ---
 # Driver Application
 * The SparkContext contains information used to run your driver app
@@ -245,17 +256,18 @@ a user would be able to load a dataset of interest into memory across a number o
 </div>
 ???
 * The SparkContext is the heart of the Spark implementation in your driver application.
-  * It contains all the information required to run your driver application.
-  * You can configure the SparkContext with environment variables, the spark-defaults.xml, and through CLI with `spark-shell` & `spark-submit`
-  * Singleton.  Only one SparkContext can exist per JVM process. 
-  * Testing is fairly straightforward with Spark because it's easy to change your `master` via configuration.
-    * For example in production you could be using a YARN cluster, but for tests you can use a single core in the same process
-    * Tests must be run in serial because of one SparkContext per JVM rule
+  * It contains all the information required for your driver application to run.
+  * You can configure the SparkContext with environment variables, the spark-defaults.xml, and through CLI with Spark helper scripts `spark-shell` & `spark-submit`
+  * The SparkContext is a singleton.  So you can only have one SparkContext per JVM process.
+  * Testing is fairly straightforward with Spark because it's easy to change your `master` Resource Manager via configuration.
+    * For example in production you could be using a Hadoop YARN cluster, but for tests you can use a single core in the same process
+    * Tests must be run in serial because of the one SparkContext per JVM rule
 
-* Data sources
+* Data sources the SparkContext supplies
   * The SparkContext Spark operates on a number of familiar data sources
   * Local filesystem, HDFS, HTTP
   * It's common to utilize HDFS for Spark application I/O
+  * There's also a spark streaming project which allows you to stream data from a number of different sources.
 
 ---
 # SampleApp.scala
@@ -307,12 +319,12 @@ $ du stackoverflow.com*/*.xml --total --block-size=G
 90G     total
 ``` 
 ???
-* The examples I'm going to show you tonight are based StackOver flow data
+* The examples I'm going to show you tonight are based StackOverflow data
 
 * Every quarter, the Stack Exchange network releases all of its data for all of its sites under a Creative Commons license
 * The dataset contains all Stack Exchange site posts, comments, badges, links, history, votes, users, and tags.
 * It's scrubbed of all personally identifying information
-* The dataset is available as a BitTorrent from the Internet Archive
+* The dataset is available as a BitTorrent from the Internet Archive, it's about 21 GB compressed
 * It's serialized as XML with one record per line
 
 * For my demo I will be working exclusively with StackOverflow.com data which comes out to 90GB of uncompressed XML data
@@ -333,14 +345,15 @@ class: large-points
 
 <img src="hulk.jpg" alt="Hulk" style="width:200px"/ >
 ???
-* Although spark has lots of cluster support, you can just as easily run it in on a single system utilizing all cores and memory you have available.
-* You can run Spark Applications with a single library download and no other infrastructure setup
-* This makes it easy to develop and troubleshoot Spark Applications in isolation
+* This is the first example I'll be running for you.
+* It's a Spark driver application running on a single system I have called hulk.
 
-* *Show StackAnalysis.scala*
+* Although Spark has lots of cluster support, you can just as easily run it in on a single system utilizing all cores and memory you have available.
+* You can run Spark Applications with a single library download and no other infrastructure to setup
+* This makes it easy to develop and troubleshoot Spark Applications in isolation which makes it easier to learn.
 
 * Count all distinct tags that are associated with StackOverflow questions that are tagged with `Scala`
-* *Describe each step of data flow*
+* *Show StackAnalysis.scala and describe each step of data flow
 
 * *Run StackAnalysis.scala* and show some of the output.. come back to results at end of presentation
 ---
@@ -360,15 +373,16 @@ http://spark.apache.org/docs/latest/running-on-mesos.html
 ???
 * Spark was designed to run in a clustered environment
 
-* You can compile or download specific binaries of Spark that run on each of their supported environments.
+* You can compile or download specific binaries of Spark that run on each of the supported environments.
 
-* With the Spark Standalone you can setup a Spark cluster without any dependency on any other Resource Negotiator's 
+* With the Spark Standalone you can setup a Spark cluster without any dependency on any other Resource Mangers
 * This is probably the best option for quick & dirty solutions, but if you want to build a cluster that other applications can run upon (like MapReduce), then it's a good idea to consider some of the other options
 
 * Some other cluster options include YARN and Mesos.
 * YARN is what encompasses the new Resource and Node Manager in the Hadoop 2.x ecosystem.  The purpose of YARN is to decouple these responsibilities from the daemon's of the traditional Hadoop ecosystem
 
-* Apache Mesos is similar to yarn, but goes a step further in unifying a cluster into a single pool of resources that applications can utilize.
+* Apache Mesos is similar to YARN, but goes a step further in unifying a cluster into a single pool of resources that applications can use.
+* Definition from Apache Mesos website:
 * "Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively."
 ---
 ## Apache Mesos cluster demo
@@ -393,17 +407,26 @@ development-5159-d9  us-central1-a n1-standard-2 10.173.40.36   104.197.11.201 R
 development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.35.65  RUNNING
 ```
 ???
-* I chose to use Google Cloud Compute amazing deal of $300 or 60 days (whichever runs out first) to use nearly anything you want available on their platform
-  * The main restrictions are that you can only have 8 vCPU total and the `n1-standard-2` image is the largest VM you can setup.
+* This is my second demo
+
+* I chose to use Google Cloud Compute service because they have an amazing deal of $300 or 60 days (whichever runs out first) to use nearly nearly any part of their platform
+  * The main restrictions are that you can only have 8 vCPU total
+  * The `n1-standard-2` image is the largest VM you can setup.
   * If you don't have a `hulk` laying around or want to play with a cluster setup then this is an excellent option.
-* I setup an Apache Mesos cluster with the help of Mesosphere.
+
+* I setup an Apache Mesos cluster with the help of Mesosphere:
+  * From their website:
+  * "The Mesosphere is a new kind of operating system that organizes all of your machines, VMs, and cloud instances into a single pool of intelligently and dynamically shared resources. It runs on top of and enhances any modern version of Linux. ""
   * Mesosphere has excellent guides to setup Mesos clusters on various Infrastructure as as Service providers like Google Cloud Compute, Amazon Web Services, and Digital Ocean.
   * They even have scripts that allow you to automate the setup of these environments if you provide them with your provider access key
   * All I had to do to accomodate my setup was attach larger disks and update HDFS config to use them
 
 * Show Google Cloud Computer console
-* Show HDFS report?
 * Show spark-shell console with cached dataset
+
+* Show total count of scala questions
+* Show count of scala questions by year
+
 * ** show hulk output **
 ---
 # References
@@ -429,9 +452,19 @@ development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.35.65  R
 ### Data
 
 * [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/)
+---
+# That's it!
 
+For this presentation and sample code.
 
+https://github.com/seglo/learning-spark/
 
+## I'm a Software Engineer working at <a href="http://www.ethoca.com/" alt="ethoca"><img src="ethoca.jpg" style="height:40px" /></a> (we're hiring!)
+
+* <a href=mailto:seglo@randonom.com>seglo@randonom.com</a>
+* http://randonom.com/blog/
+* https://github.com/seglo/
+* https://twitter.com/randonom/
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
