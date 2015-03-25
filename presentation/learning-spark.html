@@ -425,7 +425,29 @@ development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.35.65  R
 * Show spark-shell console with cached dataset
 
 * Show total count of scala questions
-* Show count of scala questions by year
+
+```
+:paste
+
+val q = StackAnalysis.questions(sc, "file:///home/seglo/source/learning-spark/data/stackexchange/stackoverflow.com-Posts/Posts1m.xml")
+
+// scala questions
+val scalaQs = qCache.filter { case (id, creationDate, tags) => tags.contains("scala") }.cache
+
+scalaQs.count()
+```
+
+* Total scala questions by month
+```
+:paste
+val sdfMonth = new java.text.SimpleDateFormat("yyyy-MM")
+
+scalaQs.map { case (id, creationDate, tags) => (sdfMonth.format(creationDate), 1)} 
+  .reduceByKey((a, b) => a + b) 
+  .sortByKey(true)
+  .collect 
+  .foreach(println)
+```
 
 * ** show hulk output **
 ---
