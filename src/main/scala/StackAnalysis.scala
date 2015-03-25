@@ -1,4 +1,5 @@
 import java.io.File
+import java.text.SimpleDateFormat
 import org.apache.commons.io.FileUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -29,12 +30,11 @@ object StackAnalysis {
     }
   }
 
-  def tagCounts(sc: SparkContext, inputFile: String, outputFile: Option[Any]) = {
-    val file = sc.textFile(inputFile)
-
+  def questions(sc: SparkContext, inputFile: String) = {
+    val sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
     // Use random sampling for 10% of data
     //.sample(false, 0.1, System.currentTimeMillis().toInt)
-    val tagCounts = file
+    sc.textFile(inputFile)
       // Skip XML lines without <row /> elements
       .filter(l ⇒ l.contains("row"))
       // Extract PostTypeId and Tags
@@ -44,8 +44,9 @@ object StackAnalysis {
           val xml = XML.loadString(l)
           //val id = (xml \ "@Id").text.toLong
           val postTypeId = (xml \ "@PostTypeId").text.toInt
+          val creationDate = (xml \ "@CreationDate").text
           val tags = (xml \ "@Tags").text
-          List((postTypeId, tags))
+          List((postTypeId, creationDate, tags))
         } catch {
           case ex: Exception ⇒ {
             println(s"failed to parse line: $l")
@@ -53,16 +54,22 @@ object StackAnalysis {
           }
         }
       })
+      // Format create date string
+      .map { case (postTypeId, creationDateString, tagString) ⇒ (postTypeId, sdf.parse(creationDateString), tagString) }
       // Format tags into Array
       // i.e. <scala><java><potato> -> Array[String]("scala", "java", "potato")
-      .map { case (postTypeId, tagString) ⇒
+      .map { case (postTypeId, creationDate, tagString) ⇒
         val splitTags = if (tagString.length == 0) Array[String]() else tagString.substring(1,tagString.length-1).split("><")
-        (postTypeId, splitTags.toList)
+        (postTypeId, creationDate, splitTags.toList)
       }
       // Only get "Question" posts (PostTypeId == 1)
-      .filter { case (postTypeId, tags) ⇒ postTypeId == 1 }
+      .filter { case (postTypeId, creationDate, tags) ⇒ postTypeId == 1 }
+  }
+
+  def tagCounts(sc: SparkContext, inputFile: String, outputFile: Option[Any]) = {
+    val tagCounts = questions(sc, inputFile)
       // If this question contains a scala tag then return a collection of all other tags
-      .flatMap { case (postTypeId, tags) ⇒ {
+      .flatMap { case (postTypeId, creationDate, tags) ⇒ {
         val otherTags = tags.diff(List("scala"))
         // Return key value pair (tuple) with tag name as the key and a base number
         // to sum in subsequent reduce step.
