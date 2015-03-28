@@ -9,5 +9,5 @@ rm -rf $SCRIPTPATH/data/output/ScalaQuestionsByMonth.txt
 
 # run locally on all cores
 $SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master local[*] target/scala-2.10/learning-spark_2.10-0.1.0.jar \
-  --input-file $SCRIPTPATH/data/stackexchange/stackoverflow.com-Posts/Posts.xml \
+  --input-file $SCRIPTPATH/data/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
   --output-directory $SCRIPTPATH/data/output 
