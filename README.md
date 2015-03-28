@@ -1,6 +1,4 @@
-# An introduction to Spark through demonstration.
-
---
+# An introduction to Spark through demonstration
 
 ## [Presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html)
 
@@ -9,9 +7,9 @@ Type `p` in presentation to see notes.
 ## Project & Demo
 
 ### Local
-To use the full StackOverflow.com dataset you must download the BitTorrent from the Internet Archive.
+To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) you must download the [BitTorrent from the Internet Archive](https://archive.org/download/stackexchange/stackexchange_archive.torrent).
 
-More information about the Stack Exchange data dump.
+[More information about the Stack Exchange data dump.](https://archive.org/details/stackexchange)
 
 I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run set the `SPARK_HOME` variable in the `run-stackanalysis-local.sh` script, package, and execute.
 
@@ -210,3 +208,27 @@ $ cat data/output/ScalaTagCount.txt/* | head -n 100
 (90,dsl)
 (90,postgresql)
 ```
+
+## References
+
+### Spark
+* [Spark Documentation](https://spark.apache.org/docs/latest/)
+* [Spark: Cluster Computing with Working Sets](https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Spark-Cluster-Computing-with-Working-Sets.pdf) - University of Berkely paper introducing Spark - Much of the introduction of this talk is paraphrased from this paper.
+* **[`spark-workshop` by Dean Wampler](https://github.com/deanwampler/spark-workshop) - Spark impl. examples in a Typesafe activator project**
+* [Cloudera: Introduction to Apache Spark developer training](http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1)
+
+### Clusters
+
+* [Google Cloud Compute](https://cloud.google.com/compute/)
+* [Mesosphere in the Cloud](http://mesosphere.com/docs/getting-started/) - Tutorials to setup mesosphere on IaaS (Amazon, DigitalOcean, Google)
+  * [Google Cloud Compute setup](http://mesosphere.com/docs/getting-started/cloud/google/)
+  * [Running Spark on Mesos](http://spark.apache.org/docs/1.3.0/running-on-mesos.html) - Mesosphere docs are out-of-date, use this once mesosphere sets up cluster for you.
+* [Spark atop Mesos on Google Cloud Platform](http://ceteri.blogspot.ca/2014/09/spark-atop-mesos-on-google-cloud.html)
+* [Running Spark on Mesos](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
+* [YARN Architecture](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
+* [HDFS Architecture](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html)
+* [`docker-spark` by SequenceIQ](https://github.com/sequenceiq/docker-spark) - If you want to play around with a YARN cluster config
+
+### Data
+
+* [Stack Exchange Creative Commons data](http://blog.stackexchange.com/category/cc-wiki-dump/)
