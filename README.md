@@ -6,15 +6,15 @@ Type `p` in presentation to see notes.
 
 ## Project & Demo
 
-### Local
 To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) you must download the [BitTorrent from the Internet Archive](https://archive.org/download/stackexchange/stackexchange_archive.torrent).
 
 [More information about the Stack Exchange data dump.](https://archive.org/details/stackexchange)
 
+### Local
+
 I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run set the `SPARK_HOME` variable in the `run-stackanalysis-local.sh` script, package, and execute.
 
 ```bash
-sbt package
 ./run-stack-analysis-local.sh
 ```
 
@@ -22,7 +22,42 @@ To run this application over the whole dataset, update `input-file` in `run-stac
 
 The output will be put into `data/output` (see `output-directory` in `run-stackanalysis-local.sh` to change location.
 
-#### Scala Question count by Month
+### Cluster
+
+In my presentation I used an Apache Mesos cluster [generated for me by Mesosphere](http://mesosphere.com/docs/getting-started/).  You can can take advantage of [Google Cloud Compute](https://cloud.google.com/compute/)'s deal where you can get $300 or 60 days of any of their services for free (28/03/15).
+
+Once you've setup a cluster you can run the `StackAnalysis` Spark driver application on it by selecting the appropriate master.  Consult [Spark's documentation](https://spark.apache.org/docs/latest/) for more details on running Spark on various cluster technologies.
+
+* [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
+* [Run on YARN cluster](https://spark.apache.org/docs/1.3.0/running-on-yarn.html)
+
+i.e.) Making `StackAnalysis` accessible via `spark-shell`.
+
+```bash
+$SPARK_HOME/bin/spark-submit --master mesos://mesos-host:5050 --jars target/scala-2.10/learning-spark_2.10-0.1.0.jar
+```
+
+i.e.) Submitting on a Mesos cluster
+
+**NOTE**: As of 28/03/15 [I can't submit `StackAnalysis` with `spark-submit`](http://stackoverflow.com/questions/29198522/cant-run-spark-submit-with-an-application-jar-on-a-mesos-cluster).  However, loading it in with `spark-shell` works.
+
+```bash
+sbt package
+$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master mesos://mesos-host:5050 target/scala-2.10/learning-spark_2.10-0.1.0.jar \
+  --input-file hdfs://mesos-host/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
+```
+
+i.e.) Submitting on a YARN cluster
+
+```bash
+export YARN_CONF_DIR=conf
+$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master yarn-client target/scala-2.10/learning-spark_2.10-0.1.0.jar \
+  --input-file hdfs://sandbox:9000/user/root/stackexchange/stackoverflow.com-Posts/Posts100k.xml
+```
+
+## Output
+
+### Scala Question count by Month
                          
 ```bash
 $ cat data/output/ScalaQuestionsByMonth.txt/*
@@ -101,7 +136,7 @@ $ cat data/output/ScalaQuestionsByMonth.txt/*
 (2014-09,398)
 ```
 
-#### Top Co-Occuring Scala Tags
+### Top Co-Occuring Scala Tags
 
 [Complete list](https://raw.githubusercontent.com/seglo/learning-spark/master/data/output/ScalaTagCount-complete.txt)
 
