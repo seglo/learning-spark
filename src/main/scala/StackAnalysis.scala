@@ -1,5 +1,5 @@
 import java.util.Date
-import java.io.File
+import java.net.URI
 import java.text.SimpleDateFormat
 import org.apache.commons.io.FileUtils
 import org.apache.spark.rdd.RDD
@@ -41,8 +41,8 @@ object StackAnalysis {
             println("Writing output files to disk")
             
             val outputDirStr = outputDir.toString
-            val stcFile = new File(outputDirStr, "ScalaTagCount.txt").toURI().toURL().toExternalForm()
-            val sqbmFile = new File(outputDirStr, "ScalaQuestionsByMonth.txt").toURI().toURL().toExternalForm() 
+            val stcFile = s"$outputDirStr/ScalaTagCount.txt"
+            val sqbmFile = s"$outputDirStr/ScalaQuestionsByMonth.txt" 
             
             tc.saveAsTextFile(stcFile)
             sqsByMonth.saveAsTextFile(sqbmFile)

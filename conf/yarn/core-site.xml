@@ -1,3 +1,4 @@
+<!-- config that works with sequenceiq spark docker image https://registry.hub.docker.com/u/sequenceiq/spark/ -->
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
