@@ -1,8 +1,17 @@
 # An introduction to Spark through demonstration
 
-## [Presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html)
+> A practical example of Apache Spark using the StackExchange dataset.  
 
-Type `p` in presentation to see notes.
+This project should assist in you setting up a live development cluster you can use to bootstrap your own Spark learning.  [These are the slides that go along with this project](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) (type `p` in presentation to see notes)
+
+Skip to
+
+* [Project & Demo](#project-demo)
+  * [Local](#local)
+  * [Cluster](#cluster)
+    * [Running the full Mesos demo](#running-the-full-mesos-demo)
+* [Output](#output) - *See the output of the "Top Co-Occurring Scala Tags" & "Scala Questions by Month" jobs*
+* [References](#references) - *Links to resources I used for this project*
 
 ## Project & Demo
 
@@ -12,50 +21,151 @@ To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/catego
 
 ### Local
 
-I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run set the `SPARK_HOME` variable in the `run-stackanalysis-local.sh` script, package, and execute.
+I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run the local example set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script, package, and execute.
+
+To run the example with `spark-submit`.
 
 ```bash
-./run-stack-analysis-local.sh
+cd learning-spark
+sbt package
+# run locally on all cores
+$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master local[*] target/scala-2.10/learning-spark_2.10-0.1.0.jar \
+  --input-file data/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
+  --output-directory data/output 
 ```
 
-To run this application over the whole dataset, update `input-file` in `run-stackanalysis-local.sh` to the real `stackoverflow.com-Posts/Posts.xml` file in the data dump.
-
-The output will be put into `data/output` (see `output-directory` in `run-stackanalysis-local.sh` to change location.
-
 ### Cluster
-
-In my presentation I used an Apache Mesos cluster [generated for me by Mesosphere](http://mesosphere.com/docs/getting-started/).  You can can take advantage of [Google Cloud Compute](https://cloud.google.com/compute/)'s deal where you can get $300 or 60 days of any of their services for free (28/03/15).
 
 Once you've setup a cluster you can run the `StackAnalysis` Spark driver application on it by selecting the appropriate master.  Consult [Spark's documentation](https://spark.apache.org/docs/latest/) for more details on running Spark on various cluster technologies.
 
 * [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
 * [Run on YARN cluster](https://spark.apache.org/docs/1.3.0/running-on-yarn.html)
 
-i.e.) Making `StackAnalysis` accessible via `spark-shell`.
+#### Running the full Mesos demo
+
+In my presentation I used an Apache Mesos cluster [generated for me by Mesosphere](http://mesosphere.com/docs/getting-started/).  You can take advantage of [Google Cloud Compute](https://cloud.google.com/compute/)'s deal where you can get $300 or 60 days of any of their services for free (28/03/15).
+
+##### 1) Sign up for Google Cloud Compute's free tier
+
+Sign up on [Google Cloud Compute](https://cloud.google.com/compute/) and click the "Start your free trial" button.  A credit card is required, but they guarantee they won't charge it without your expressed permission.  I read this as once your $300 or 60 days are up they will ask if you want to upgrade your account.  I haven't yet reached this point, so proceed with this at your own risk!
+
+Create a new project you will use for your development cluster.
+
+##### 2) Setup a Mesos cluster with Mesosphere
+
+Mesosphere can automatically setup and configure a basic mesos cluster for you.  To read more about the process check out [Getting Started with Mesosphere for Google Cloud Platform](http://mesosphere.com/docs/getting-started/cloud/google/mesosphere/).  Once you're ready to proceed you can proceed with the setup with this link.
+
+[`https://google.mesosphere.com/`](https://google.mesosphere.com/)
+
+##### 3) Attach some extra drive storage for large datasets
+
+The default `n1-standard-2` image only comes with a boot disk of 10GB.  Mesosphere will configure HDFS to run on this disk, which with HDFS replication isn't a whole lot of space to work with on your cluster.  I attached new fresh 500GB local storage to each node in my cluster (including master), so I could work with the entire stackexchange dataset.  
+
+Spark supports AWS S3 which would make this work a lot easier, but AFAIK it doesn't support Google equivalent Cloud Storage or Cloud Datastore features.. this may make for an interesting project for someone!
+
+[Add a new persistent disk to each of your VM's](https://cloud.google.com/compute/docs/disks/persistent-disks) using the Console or `gcloud` CLI tool.
+
+###### Update your HDFS configuration on your slaves
+
+Once you've attached the new drive you need to mount it and make it accessible for HDFS.
 
 ```bash
-$SPARK_HOME/bin/spark-submit --master mesos://mesos-host:5050 --jars target/scala-2.10/learning-spark_2.10-0.1.0.jar
+# Find out the device name (i.e. /dev/sdb)
+sudo fdisk -l
+# Create your mount point and mount the device
+sudo mkdir /hdfs
+sudo /usr/share/google/safe_format_and_mount -m "mkfs.ext4 -F" /dev/sdb /hdfs
+# Give the HDFS daemon ownership of the drive
+sudo chown hdfs:hadoop /hdfs
+# Update your /etc/fstab to mount the device on boot
+sudo echo "/dev/sdb /hdfs ext4 defaults 0 0" >> /etc/fstab
 ```
 
-i.e.) Submitting on a Mesos cluster
+Update your HDFS config to use the new drive or create a symlink.  Edit `/etc/hadoop/conf/hdfs-site.xml`.
 
-**NOTE**: As of 28/03/15 [I can't submit `StackAnalysis` with `spark-submit`](http://stackoverflow.com/questions/29198522/cant-run-spark-submit-with-an-application-jar-on-a-mesos-cluster).  However, loading it in with `spark-shell` works.
+```xml
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <!-- <value>/var/lib/hadoop-hdfs/data</value> -->
+    <value>/hdfs</value>
+  </property>
+```
+
+Restart the hdfs datanode service.
 
 ```bash
+sudo /etc/init.d/hadoop-hdfs-datanode restart
+```
+
+###### Update your HDFS configuration on your master
+
+Perform the same steps as with the slaves above (except for restarting the datanode service, as it's not running on master).
+
+**NOTE: After you format HDFS you will need to re-add your spark binaries to the HDFS filesystem as mentioned in the "Uploading Spark Package" section on the [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html) guide.**
+
+```bash
+# Restart the namenode service
+sudo /etc/init.d/hadoop-hdfs-namenode restart
+# Format the HDFS filesystem.
+hadoop namenode -format
+# Exit safe mode
+hdfs dfsadmin -safemode leave
+# Check the health of the HDFS
+hdfs dfsadmin -report
+```
+
+After running the report you should see something like this, along with stats on each data node.
+
+```bash
+jclouds@development-5159-d9:~$ hdfs dfsadmin -report
+Configured Capacity: 1584938655744 (1.44 TB)
+Present Capacity: 1406899326976 (1.28 TB)
+DFS Remaining: 1310000644096 (1.19 TB)
+DFS Used: 96898682880 (90.24 GB)
+DFS Used%: 6.89%
+Under replicated blocks: 0
+Blocks with corrupt replicas: 0
+Missing blocks: 0
+Missing blocks (with replication factor 1): 0
+
+... datanode stats
+```
+
+##### 4) Upload stackexchange dataset to your HDFS cluster
+
+Download the [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) directly to the new drive you attached to your namenode.  I suggest this because I made the unfortunate mistake of downloading it locally and attempting to upload it to my development cluster with a mere 1mbps connection.
+
+Unpack the archive and add the `stackoverflow.com-Posts/Posts.xml` file to HDFS.
+
+```bash
+hdfs dfs -mkdir -p /stackexchange/stackoverflow.com-Posts
+hdfs dfs -put stackoverflow.com-Posts/Posts.xml /stackexchange/stackoverflow.com-Posts/Posts.xml
+```
+
+###### 5) Run the `StackAnalysis` driver application
+
+I scripted some of the configuration I used to run the `StackAnalysis` application on mesos.  To use this setup the necessary configuration (`SPARK_HOME`, `MASTER_HOST`, and `SPARK_EXECUTOR_URI`) in `conf/mesos/mesos-env.sh` and run the job with `bin/run-stack-analysis-mesos.sh` or the `spark-shell` with `bin/run-spark-shell-mesos.sh`.
+
+To run `StackAnalysis` using Spark's provided `spark-submit` then you must have configured Spark appropriately as discussed in Spark's [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html) guide (setup `spark-defaults.xml` and `spark-env.sh`).  Then you can submit the job.
+
+```bash
+# NOTE: input-file and output-directory could also point to local filesystem with URI convention (i.e. file:///home/foo)
 sbt package
 $SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master mesos://mesos-host:5050 target/scala-2.10/learning-spark_2.10-0.1.0.jar \
   --input-file hdfs://mesos-host/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
+  --output-directory hdfs://mesos-host/output
 ```
 
-i.e.) Submitting on a YARN cluster
+You can also run `spark-shell` and play with the dataset on the whole cluster using a standard Scala REPL.
 
 ```bash
-export YARN_CONF_DIR=conf
-$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master yarn-client target/scala-2.10/learning-spark_2.10-0.1.0.jar \
-  --input-file hdfs://sandbox:9000/user/root/stackexchange/stackoverflow.com-Posts/Posts100k.xml
+sbt package
+$SPARK_HOME/bin/spark-submit --master mesos://mesos-host:5050 --jars target/scala-2.10/learning-spark_2.10-0.1.0.jar
 ```
 
 ## Output
+
+This is the output of the `StackAnalysis` jobs.
 
 ### Scala Question count by Month
                          
