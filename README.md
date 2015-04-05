@@ -54,11 +54,28 @@ Sign up on [Google Cloud Compute](https://cloud.google.com/compute/) and click t
 
 Create a new project you will use for your development cluster.
 
+![Google Cloud Compute console](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/google_console.png)
+
 ##### 2) Setup a Mesos cluster with Mesosphere
 
-Mesosphere can automatically setup and configure a basic mesos cluster for you.  To read more about the process check out [Getting Started with Mesosphere for Google Cloud Platform](http://mesosphere.com/docs/getting-started/cloud/google/mesosphere/).  Once you're ready to proceed you can proceed with the setup with this link.
+Mesosphere can automatically setup and configure a basic mesos cluster for you by using your Google Cloud Compute's API and your access key.  To read more about the process check out [Getting Started with Mesosphere for Google Cloud Platform](http://mesosphere.com/docs/getting-started/cloud/google/mesosphere/).  Once you're ready to proceed you can proceed with the setup with this link.
 
 [`https://google.mesosphere.com/`](https://google.mesosphere.com/)
+
+After the cluster is setup you should have 4 VM's setup of type `n1-standard-2` each with 2 vCPU, 7.5GB RAM, 10GB boot disk.  You can manage them with Google Cloud Compute's web console or using their `gcloud` CLI tool
+
+```bash
+$ gcloud compute instances list --project learning-spark
+NAME                 ZONE          MACHINE_TYPE  INTERNAL_IP    EXTERNAL_IP     STATUS
+development-5159-d3d us-central1-a n1-standard-2 10.217.7.180   146.148.xxx.xxx RUNNING
+development-5159-b61 us-central1-a n1-standard-2 10.144.195.205 104.197.xxx.xxx RUNNING
+development-5159-d9  us-central1-a n1-standard-2 10.173.40.36   104.197.xxx.xxx RUNNING
+development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.xxx.xxx RUNNING
+```
+
+A handy reference page from mesosphere with pertinent details about your cluster.
+
+![Mesosphere cluster page](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/mesosphere_cluster.png)
 
 ##### 3) Attach some extra drive storage for large datasets
 
@@ -145,7 +162,7 @@ hdfs dfs -mkdir -p /stackexchange/stackoverflow.com-Posts
 hdfs dfs -put stackoverflow.com-Posts/Posts.xml /stackexchange/stackoverflow.com-Posts/Posts.xml
 ```
 
-###### 5) Run the `StackAnalysis` driver application
+##### 5) Run the `StackAnalysis` driver application
 
 I scripted some of the configuration I used to run the `StackAnalysis` application on mesos.  To use this setup the necessary configuration (`SPARK_HOME`, `MASTER_HOST`, and `SPARK_EXECUTOR_URI`) in `conf/mesos/mesos-env.sh` and run the job with `bin/run-stack-analysis-mesos.sh` or the `spark-shell` with `bin/run-spark-shell-mesos.sh`.
 
