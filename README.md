@@ -21,18 +21,21 @@ To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/catego
 
 ### Local
 
-I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run the local example set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script, package, and execute.
+I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run the local example download the Spark binaries and set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script.  Package (`sbt package`) and then run the script.
 
-To run the example with `spark-submit`.
+Or, to run the example with Spark's provided `spark-submit` shell script.  Set or replace `$SPARK_HOME` with where you unpacked your Spark binaries.
 
 ```bash
 cd learning-spark
+LS_HOME=$(pwd)
 sbt package
 # run locally on all cores
-$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master local[*] target/scala-2.10/learning-spark_2.10-0.1.0.jar \
-  --input-file data/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
-  --output-directory data/output 
+$SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master local[*] $LS_HOME/target/scala-2.10/learning-spark_2.10-0.1.0.jar \
+  --input-file file://$LS_HOME/data/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
+  --output-directory file://$LS_HOME/data/output 
 ```
+
+Output is persisted to the local file system
 
 ### Cluster
 
@@ -150,7 +153,6 @@ To run `StackAnalysis` using Spark's provided `spark-submit` then you must have 
 
 ```bash
 # NOTE: input-file and output-directory could also point to local filesystem with URI convention (i.e. file:///home/foo)
-sbt package
 $SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master mesos://mesos-host:5050 target/scala-2.10/learning-spark_2.10-0.1.0.jar \
   --input-file hdfs://mesos-host/stackexchange/stackoverflow.com-Posts/Posts100k.xml \
   --output-directory hdfs://mesos-host/output
@@ -159,7 +161,6 @@ $SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master mesos://mesos-host
 You can also run `spark-shell` and play with the dataset on the whole cluster using a standard Scala REPL.
 
 ```bash
-sbt package
 $SPARK_HOME/bin/spark-submit --master mesos://mesos-host:5050 --jars target/scala-2.10/learning-spark_2.10-0.1.0.jar
 ```
 
