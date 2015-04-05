@@ -2,9 +2,11 @@
 
 > A practical example of Apache Spark using the StackExchange dataset.  
 
-This project should assist in you setting up a live development cluster you can use to bootstrap your own Spark learning.  [These are the slides that go along with this project](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) (type `p` in presentation to see notes)
+This project contains an Apache Spark driver application called `StackAnalysis`.  This guide instructs you how to run the driver application locally or an Apache Mesos cluster.  
 
-Skip to
+Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) I gave at [The Toronto Scala & Typesafe User Group](http://www.meetup.com/Toronto-Scala-Typesafe-User-Group/) (type `p` in presentation to see notes).
+
+Skip to..
 
 * [Project & Demo](#project-demo)
   * [Local](#local)
@@ -35,11 +37,11 @@ $SPARK_HOME/bin/spark-submit --class "StackAnalysis" --master local[*] $LS_HOME/
   --output-directory file://$LS_HOME/data/output 
 ```
 
-Output is persisted to the local file system
+Output is persisted to the local file system at `data/output/`
 
 ### Cluster
 
-Once you've setup a cluster you can run the `StackAnalysis` Spark driver application on it by selecting the appropriate master.  Consult [Spark's documentation](https://spark.apache.org/docs/latest/) for more details on running Spark on various cluster technologies.
+Once you've setup a cluster you can run the `StackAnalysis` Spark driver application on it by selecting the appropriate master.  Consult [Spark's documentation](https://spark.apache.org/docs/1.3.0/) for more details on running Spark on various cluster technologies.
 
 * [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
 * [Run on YARN cluster](https://spark.apache.org/docs/1.3.0/running-on-yarn.html)
