@@ -42,7 +42,7 @@ Output is persisted to the local file system at `data/output/`
 
 ### Cluster
 
-You can run Spark applications on a cluster using several different technologies.  Consult [Spark's documentation](https://spark.apache.org/docs/1.3.0/) for more details on running Spark on various cluster technologies.
+You can run Spark applications on a cluster using several different technologies.  Consult [Spark's documentation](https://spark.apache.org/docs/1.3.0/) for more details.
 
 * [Installing Spark Standalone to a Cluster](https://spark.apache.org/docs/latest/spark-standalone.html)
 * [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
