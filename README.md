@@ -1,6 +1,6 @@
 # An introduction to Spark through demonstration
 
-> A practical example of Apache Spark using the StackExchange dataset.  
+> A practical example of Apache Spark using the Stack Exchange dataset.  
 
 Skip to..
 
