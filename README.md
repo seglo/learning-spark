@@ -17,6 +17,8 @@ This project contains an [Apache Spark](https://spark.apache.org/) driver applic
 
 Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) I gave at the [Toronto Scala & Typesafe User Group](http://www.meetup.com/Toronto-Scala-Typesafe-User-Group/) (type `p` in presentation to see notes).
 
+The Spark driver application itself is a relatively short **[StackAnalysis.scala](https://github.com/seglo/learning-spark/blob/master/src/main/scala/StackAnalysis.scala)** file in the respository.
+
 ### Local
 
 I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) you must download the [BitTorrent from the Internet Archive](https://archive.org/download/stackexchange/stackexchange_archive.torrent).
