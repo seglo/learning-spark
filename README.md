@@ -2,32 +2,33 @@
 
 > A practical example of Apache Spark using the StackExchange dataset.  
 
-This project contains an Apache Spark driver application called `StackAnalysis`.  This guide instructs you how to run the driver application locally or an Apache Mesos cluster.  
-
-Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) I gave at [The Toronto Scala & Typesafe User Group](http://www.meetup.com/Toronto-Scala-Typesafe-User-Group/) (type `p` in presentation to see notes).
-
 Skip to..
 
 * [Project & Demo](#project-demo)
   * [Local](#local)
   * [Cluster](#cluster)
-    * [Running the full Mesos demo](#running-the-full-mesos-demo)
+* [Running the full Mesos demo](#running-the-full-mesos-demo)
 * [Output](#output) - *See the output of the "Top Co-Occurring Scala Tags" & "Scala Questions by Month" jobs*
 * [References](#references) - *Links to resources I used for this project*
 
 ## Project & Demo
 
-To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) you must download the [BitTorrent from the Internet Archive](https://archive.org/download/stackexchange/stackexchange_archive.torrent).
+This project contains an [Apache Spark](https://spark.apache.org/) driver application called `StackAnalysis`.  Instructions are provided on how to run the driver application locally or on an [Apache Mesos](http://mesos.apache.org/) cluster.  
 
-[More information about the Stack Exchange data dump.](https://archive.org/details/stackexchange)
+Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) I gave at the [Toronto Scala & Typesafe User Group](http://www.meetup.com/Toronto-Scala-Typesafe-User-Group/) (type `p` in presentation to see notes).
 
 ### Local
 
-I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To run the local example download the Spark binaries and set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script.  Package (`sbt package`) and then run the script.
+I've bundled a 100k line sample of the StackOverflow.com posts data in this repository.  To use the full [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) you must download the [BitTorrent from the Internet Archive](https://archive.org/download/stackexchange/stackexchange_archive.torrent).
+
+[More information about the Stack Exchange data dump.](https://archive.org/details/stackexchange)
+
+To run the local example [download the Spark binaries](https://spark.apache.org/downloads.html) and set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script.  Package (`sbt package`) and then run the script.
 
 Or, to run the example with Spark's provided `spark-submit` shell script.  Set or replace `$SPARK_HOME` with where you unpacked your Spark binaries.
 
 ```bash
+git clone https://github.com/seglo/learning-spark.git
 cd learning-spark
 LS_HOME=$(pwd)
 sbt package
