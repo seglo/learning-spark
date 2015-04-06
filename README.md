@@ -23,7 +23,7 @@ I've bundled a 100k line sample of the StackOverflow.com posts data in this repo
 
 [More information about the Stack Exchange data dump.](https://archive.org/details/stackexchange)
 
-To run the local example [download the Spark binaries](https://spark.apache.org/downloads.html) and set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script.  Package (`sbt package`) and then run the script.
+To run the local example [download the Spark binaries](https://spark.apache.org/downloads.html) and set the `SPARK_HOME` variable in the `bin\run-stackanalysis-local.sh` script.  Package the app (`sbt package`) and then run the script.
 
 Or, to run the example with Spark's provided `spark-submit` shell script.  Set or replace `$SPARK_HOME` with where you unpacked your Spark binaries.
 
@@ -42,18 +42,19 @@ Output is persisted to the local file system at `data/output/`
 
 ### Cluster
 
-Once you've setup a cluster you can run the `StackAnalysis` Spark driver application on it by selecting the appropriate master.  Consult [Spark's documentation](https://spark.apache.org/docs/1.3.0/) for more details on running Spark on various cluster technologies.
+You can run Spark applications on a cluster using several different technologies.  Consult [Spark's documentation](https://spark.apache.org/docs/1.3.0/) for more details on running Spark on various cluster technologies.
 
+* [Installing Spark Standalone to a Cluster](https://spark.apache.org/docs/latest/spark-standalone.html)
 * [Run on Mesos cluster](https://spark.apache.org/docs/1.3.0/running-on-mesos.html)
 * [Run on YARN cluster](https://spark.apache.org/docs/1.3.0/running-on-yarn.html)
 
 #### Running the full Mesos demo
 
-In my presentation I used an Apache Mesos cluster [generated for me by Mesosphere](http://mesosphere.com/docs/getting-started/).  You can take advantage of [Google Cloud Compute](https://cloud.google.com/compute/)'s deal where you can get $300 or 60 days of any of their services for free (28/03/15).
+In my presentation I used an Apache Mesos cluster [generated for me by Mesosphere](http://mesosphere.com/docs/getting-started/).  You may take advantage of [Google Cloud Compute](https://cloud.google.com/compute/)'s deal where you can get $300 or 60 days of any of their services for free (28/03/15).
 
 ##### 1) Sign up for Google Cloud Compute's free tier
 
-Sign up on [Google Cloud Compute](https://cloud.google.com/compute/) and click the "Start your free trial" button.  A credit card is required, but they guarantee they won't charge it without your expressed permission.  I read this as once your $300 or 60 days are up they will ask if you want to upgrade your account.  I haven't yet reached this point, so proceed with this at your own risk!
+Sign up on [Google Cloud Compute](https://cloud.google.com/compute/) and click the "Start your free trial" button.  A credit card is required, but they guarantee that they won't charge it without your expressed permission.  I interpretted this as once your $300 or 60 days are up *they will ask* if you want to upgrade your account, but I haven't yet reached this point, so proceed at your own risk!
 
 Create a new project you will use for your development cluster.
 
@@ -76,7 +77,7 @@ development-5159-d9  us-central1-a n1-standard-2 10.173.40.36   104.197.xxx.xxx 
 development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.xxx.xxx RUNNING
 ```
 
-A handy reference page from mesosphere with pertinent details about your cluster.
+A handy reference page from mesosphere with pertinent details about your cluster.  It also contains details on how to establish an OpenVPN VPN connection to it.
 
 ![Mesosphere cluster page](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/mesosphere_cluster.png)
 
@@ -88,7 +89,7 @@ Spark supports AWS S3 which would make this work a lot easier, but AFAIK it does
 
 [Add a new persistent disk to each of your VM's](https://cloud.google.com/compute/docs/disks/persistent-disks) using the Console or `gcloud` CLI tool.
 
-###### Update your HDFS configuration on your slaves
+###### Update your HDFS configuration on your slaves (datanodes)
 
 Once you've attached the new drive you need to mount it and make it accessible for HDFS.
 
@@ -106,6 +107,8 @@ sudo echo "/dev/sdb /hdfs ext4 defaults 0 0" >> /etc/fstab
 
 Update your HDFS config to use the new drive or create a symlink.  Edit `/etc/hadoop/conf/hdfs-site.xml`.
 
+**NOTE: There's certainly a way to do this without destroying anything on your HDFS partition, but as there's very little on the partition anyhow I decided to proceed in creating a new one and formatting it.**
+
 ```xml
   <property>
     <name>dfs.datanode.data.dir</name>
@@ -120,7 +123,7 @@ Restart the hdfs datanode service.
 sudo /etc/init.d/hadoop-hdfs-datanode restart
 ```
 
-###### Update your HDFS configuration on your master
+###### Update your HDFS configuration on your master (namenode)
 
 Perform the same steps as with the slaves above (except for restarting the datanode service, as it's not running on master).
 
@@ -154,9 +157,9 @@ Missing blocks (with replication factor 1): 0
 ... datanode stats
 ```
 
-##### 4) Upload stackexchange dataset to your HDFS cluster
+##### 4) Download stackexchange dataset to your HDFS cluster
 
-Download the [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) directly to the new drive you attached to your namenode.  I suggest this because I made the unfortunate mistake of downloading it locally and attempting to upload it to my development cluster with a mere 1mbps connection.
+Download the [StackOverflow.com dataset](http://blog.stackexchange.com/category/cc-wiki-dump/) directly to the new drive you mounted on your namenode.  I suggest this because I made the unfortunate mistake of downloading it locally and attempting to upload it to my development cluster with a mere 1mbps connection.
 
 Unpack the archive and add the `stackoverflow.com-Posts/Posts.xml` file to HDFS.
 
