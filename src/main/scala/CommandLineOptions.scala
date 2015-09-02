@@ -12,19 +12,19 @@ object CommandLineOptions {
 
     def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
       def isSwitch(s : String) = (s(0) == '-')
-      
+
       list match {
         case Nil ⇒ map
         case "--input-file" :: value :: tail ⇒
           nextOption(map ++ Map('inputfile -> value), tail)
         case "--output-directory" :: value :: tail ⇒
           nextOption(map ++ Map('outputdir -> value), tail)
-        case option :: tail ⇒ println("Unknown option "+option) 
-          exit(1) 
-      }      
-    } 
+        case option :: tail ⇒ println("Unknown option "+option)
+          exit(1)
+      }
+    }
     val options = nextOption(Map(),arglist)
     println(options)
     options
-  } 
+  }
 }
