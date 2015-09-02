@@ -50,9 +50,9 @@ class Specs2HelloWorld extends Specification {
 
   "clients.github.GitHubClient" should {
     "Get latest events" in {
-      val g = new GitHubClient
+      val g = new GitHubClient(useLastETag = false)
 
-      val f = for (ex <- g.events(lastETag = None).left)
+      val f = for (ex <- g.events.left)
         yield "An error happened on GitHub API: " + ex.getMessage
 
       val responseFuture = for (res <- f.right) yield res
