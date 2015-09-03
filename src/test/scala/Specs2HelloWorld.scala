@@ -1,9 +1,11 @@
-import clients.github.GitHubClient
+import clients.github.GitHubClientSpecs
 import com.ning.http.client.Response
 import dispatch._, Defaults._
 import org.specs2.mutable._
 import scala.concurrent._
 import scala.concurrent.duration._
+import play.api.libs.json._
+
 
 case class Location(city: String, state: String)
 
@@ -34,39 +36,66 @@ class Specs2HelloWorld extends Specification {
       "conditions" / "q" / loc.state / (loc.city + ".xml")
   }
 
-//  "Learning dispatch" should {
-//    "Get latest events" in {
-//      foo()
-//      success
-//    }
-//    "Get weather" in {
-//      val nyc = Location("New York", "NY")
-//
-//      println(Await.result(Http(weatherSvc(nyc) OK as.String), Duration.Inf))
-//      success
-//    }
-//
-//  }
+  //  "Learning dispatch" should {
+  //    "Get latest events" in {
+  //      foo()
+  //      success
+  //    }
+  //    "Get weather" in {
+  //      val nyc = Location("New York", "NY")
+  //
+  //      println(Await.result(Http(weatherSvc(nyc) OK as.String), Duration.Inf))
+  //      success
+  //    }
+  //
+  //  }
 
-  "clients.github.GitHubClient" should {
-    "Get latest events" in {
-      val g = new GitHubClient(useLastETag = false)
+  //  "clients.github.GitHubClient" should {
+  //    "Get latest events" in {
+  //      val g = new GitHubClient(useLastETag = false)
+  //
+  //      val f = for (ex <- g.events.left)
+  //        yield "An error happened on GitHub API: " + ex.getMessage
+  //
+  //      val responseFuture = for (res <- f.right) yield res
+  //
+  //      val realResponse = Await.result(responseFuture, Duration.Inf)
+  //
+  //      for (response <- realResponse.right) {
+  //        println("Headers" + response.getHeaders)
+  //        println("Response body" + response.getResponseBody)
+  //      }
+  //
+  //      for (error <- realResponse.left) {
+  //        println(error)
+  //      }
+  //
+  //      success
+  //    }
+  //  }
+  "json" should {
+    "parse" in {
 
-      val f = for (ex <- g.events.left)
-        yield "An error happened on GitHub API: " + ex.getMessage
 
-      val responseFuture = for (res <- f.right) yield res
+      val json: JsValue = Json.parse( """
+{
+  "user": {
+    "name" : "toto",
+    "age" : 25,
+    "email" : "toto@jmail.com",
+    "isAlive" : true,
+    "friend" : {
+      "name" : "tata",
+      "age" : 20,
+      "email" : "tata@coldmail.com"
+    }
+  }
+}
+                                      """)
 
-      val realResponse = Await.result(responseFuture, Duration.Inf)
-
-      for (response <- realResponse.right) {
-        println("Headers" + response.getHeaders)
-        println("Response body" + response.getResponseBody)
-      }
-
-      for (error <- realResponse.left) {
-        println(error)
-      }
+      val j = json \ "user" \ "friend" \ "age"
+      for (age <- j.toEither.right)
+        println("age: " + age)
 
       success
     }

@@ -17,6 +17,7 @@ lazy val `learning-spark` = (project in file(".")).
       "org.apache.spark" % "spark-streaming-kafka_2.10" % "1.4.1",
       "org.apache.kafka" % "kafka-clients" % "0.8.2.1",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
+      "com.typesafe.play" % "play-json_2.10" % "2.4.2",
       "com.typesafe" % "config" % "1.3.0",
       "org.specs2" %% "specs2-core" % "2.4.15" % "test")
   )
