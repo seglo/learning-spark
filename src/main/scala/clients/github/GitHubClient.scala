@@ -1,82 +1,126 @@
 package clients.github
 
 import clients.Config
-import com.ning.http.client.Response
 import dispatch.Defaults._
 import dispatch._
 import play.api.libs.json._
 
-case class GitHubEvent(id: String, createdAt: String, eventType: String)
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
-class GitHubClient(useLastETag: Boolean = false) {
+case class GitHubEvent(id: BigInt, createdAt: String, eventType: String, raw: String)
+
+class GitHubClient {
   val name = "GitHub"
 
   val accessToken = Config.get.githubAccessKey
-
-  val githubApi = host("api.github.com").secure <:< Map("Authorization" -> s"token $accessToken")
-
+  // 100 is the max page size this end point accepts as of 20150905
+  val eventsPageSize = "100"
+  val requestHeaders = Map(
+    "Authorization" -> s"token $accessToken",
+    "User-Agent" -> "Sean's Spark Streaming Demo"
+  )
+  val githubApi = host("api.github.com").secure <:< requestHeaders
   var lastETag: Option[String] = None
-
-  def go = events
+  var lastId: Option[BigInt] = None
 
   /**
-   * Get the latest GitHub events.
+   * Get a transformed list of Events from GitHub.
+   * @return A future Either that represents Http or Parsing errors or
+   *         the fully parsed list of Events.
+   */
+  def go = Future {
+    // this sucks, but how else to yield a Future[Either[String, List[GitHubEvent]]]?
+    val either = Await.result(events(lastETag), Duration.Inf)
+    for {
+      response <- either.right
+      eventList <- createEvents(response.getResponseBody, lastId).right
+    } yield {
+      println("Headers" + response.getHeaders)
+      println("Response body" + response.getResponseBody)
+
+      lastETag = Some(response.getHeader("ETag"))
+      if (eventList.length > 0) lastId = Some(eventList.maxBy(e => e.id).id)
+      eventList
+    }
+  }
+
+  /**
+   * Get the latest GitHub events from their API.
    *
+   * @param lastETag The ETag from the last events call.  Used to only get
+   *                 new events.
    * @return Returns a dispatch.Future of Either.
    *         2XX responses are returned as Response all others are
    *         Throwables that are converted into simple string messages.
    */
-  def events: dispatch.Future[Either[Throwable, Response]] = {
+  def events(lastETag: Option[String]) = {
+    val eventEndpoint = githubApi / "events" <<? Map("per_page" -> eventsPageSize)
     val c =
       lastETag match {
-        case Some(eTag) => githubApi / "events" <:< Map("If-None-Match" -> eTag)
-        case None => githubApi / "events"
+        case Some(eTag) => eventEndpoint <:< Map("If-None-Match" -> eTag)
+        case None => eventEndpoint
       }
     val future = Http(c OK as.Response(r => r)).either
 
-    for (response <- future.right)
-      yield {
-        if (useLastETag) lastETag = Some(response.getHeader("ETag"))
-        response
-      }
+    for (ex <- future.left)
+      yield "An error happened on GitHub API: " + ex.getMessage
   }
 
   /**
    * Create a list of GitHubEvent's from the GitHub events JSON response.
    * @param responseBody The GitHub events JSON response.
+   * @param lastId The ID of the most recent event from the last call.
    * @return An Either with an error message indicating all parsing failures
    *         or a list of successfully parsed GitHubEvent's.
    *
    *         A Left error message will be returned if there's at least one
    *         parsing failure.
    */
-  def createEvents(responseBody: String): Either[String, List[GitHubEvent]] = {
+  def createEvents(responseBody: String, lastId: Option[BigInt]): Either[String, List[GitHubEvent]] = {
     val json = Json.parse(responseBody)
 
-    val eventListJs = for {
+    val eventListResult = for {
       events <- json.validate[List[JsValue]]
     } yield events
 
-    eventListJs match {
-      case JsSuccess(events: List[JsValue], path) => {
+    eventListResult match {
+      case JsSuccess(eventList: List[JsValue], path) =>
 
-        val eventList: List[JsResult[GitHubEvent]] =
-          for (e <- events)
+        val githubEventResults: List[JsResult[GitHubEvent]] =
+          for (e <- eventList)
             yield for {
                 id <- (e \ "id").validate[String]
                 createdAt <- (e \ "created_at").validate[String]
                 eventType <- (e \ "type").validate[String]
-              } yield GitHubEvent(id, createdAt, eventType)
+              } yield GitHubEvent(BigInt(id), createdAt, eventType, e.toString())
 
-        eventList.partition(_.getClass == classOf[JsError]) match {
+        githubEventResults.partition(_.getClass == classOf[JsError]) match {
           case (errors, success) =>
             if (errors.length > 0)
-              Left(s"There were errors parsing ${errors.length} events.\n" + errors.mkString("\n"))
+              Left(s"There were ${errors.length} errors parsing ${eventList.length} events.\n" + errors.mkString("\n"))
             else
-              Right(success.map(s => s.get))
+              Right(newEvents(success.map(_.get), lastId))
         }
-      }
       case e: JsError => Left("Could not parse events array: \n" + e.toString)
     }
   }
+
+  /**
+   * Only get new events based on consecutive GitHub event ID
+   * @param eventList The list of GitHubEvent's
+   * @param lastId The ID of the most recent event from the last call.
+   * @return The list of new GitHubEvent's since the last call.
+   */
+  def newEvents(eventList: List[GitHubEvent], lastId: Option[BigInt]) =
+    lastId match {
+      case Some(id) =>
+        val newEventList = eventList.filter(_.id > id)
+        if (newEventList.length > 0) {
+          val missedEventGap = newEventList.minBy(_.id).id - id
+          if (missedEventGap > 1) println(s"Missed $missedEventGap events.")
+        }
+        newEventList
+      case None => eventList
+    }
 }

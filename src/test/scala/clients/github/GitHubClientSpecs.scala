@@ -12,7 +12,7 @@ class GitHubClientSpecs extends Specification {
 
       val g = new GitHubClient
 
-      val events = g.createEvents(json)
+      val events = g.createEvents(json, None)
 
       events.right.get must have size 30
     }
