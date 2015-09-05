@@ -1,7 +1,6 @@
 package clients
 
-import clients.github.{GitHubEvent, GitHubClient}
-import com.ning.http.client.Response
+import clients.github._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -10,22 +9,17 @@ object ClientRunner {
   val clients = Seq(new GitHubClient)
   val resolution = Config.get.resolution
 
-  def main (args: Array[String]) {
-    run
-  }
+  def main (args: Array[String]) = run()
 
-  def run = {
+  def run() = {
     var loop = true
     while(loop) {
       for (c <- clients) {
-        val responseFuture = c.go
-
-        //for (response <- responseFuture) { }
-        val response = Await.result(responseFuture, Duration.Inf)
+        val response = Await.result(c.go, Duration.Inf)
 
         response match {
-          case Right(events) =>
-            produce(c.name, events)
+          case Right(parsedResponse) =>
+            produce(c.name, parsedResponse)
             Thread.sleep(resolution)
           case Left(error) =>
             println("An error occurred: " + error)
@@ -36,8 +30,8 @@ object ClientRunner {
     }
   }
 
-  def produce(clientName: String, events: List[GitHubEvent]) = {
+  def produce(clientName: String, response: GitHubEventResponse) = {
     println("Producing a response for " + clientName)
-    println("Events:\n" + events.mkString)
+    println("Events:\n" + response.events.mkString)
   }
 }

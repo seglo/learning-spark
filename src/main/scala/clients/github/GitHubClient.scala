@@ -4,11 +4,13 @@ import clients.Config
 import dispatch.Defaults._
 import dispatch._
 import play.api.libs.json._
-
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-case class GitHubEvent(id: BigInt, createdAt: String, eventType: String, raw: String)
+case class GitHubEventResponse(requestId: String, response: String, events: List[GitHubEvent])
+case class GitHubEvent(id: Long, createdAt: String, eventType: String,
+                       login: String, userId: Long, avatar: String, repoId: Long,
+                       repoName: String)
 
 class GitHubClient {
   val name = "GitHub"
@@ -22,7 +24,7 @@ class GitHubClient {
   )
   val githubApi = host("api.github.com").secure <:< requestHeaders
   var lastETag: Option[String] = None
-  var lastId: Option[BigInt] = None
+  var lastId: Option[Long] = None
 
   /**
    * Get a transformed list of Events from GitHub.
@@ -33,15 +35,18 @@ class GitHubClient {
     // this sucks, but how else to yield a Future[Either[String, List[GitHubEvent]]]?
     val either = Await.result(events(lastETag), Duration.Inf)
     for {
-      response <- either.right
-      eventList <- createEvents(response.getResponseBody, lastId).right
+      res <- either.right
+      eventList <- createEvents(res.getResponseBody, lastId).right
     } yield {
-      println("Headers" + response.getHeaders)
-      println("Response body" + response.getResponseBody)
+      println("Headers" + res.getHeaders)
+      println("Response body" + res.getResponseBody)
 
-      lastETag = Some(response.getHeader("ETag"))
+      val requestId = res.getHeader("X-GitHub-Request-Id")
+      val responseBody = res.getResponseBody
+      lastETag = Some(res.getHeader("ETag"))
       if (eventList.length > 0) lastId = Some(eventList.maxBy(e => e.id).id)
-      eventList
+
+      GitHubEventResponse(requestId, responseBody, eventList)
     }
   }
 
@@ -77,7 +82,7 @@ class GitHubClient {
    *         A Left error message will be returned if there's at least one
    *         parsing failure.
    */
-  def createEvents(responseBody: String, lastId: Option[BigInt]): Either[String, List[GitHubEvent]] = {
+  def createEvents(responseBody: String, lastId: Option[Long]): Either[String, List[GitHubEvent]] = {
     val json = Json.parse(responseBody)
 
     val eventListResult = for {
@@ -90,10 +95,19 @@ class GitHubClient {
         val githubEventResults: List[JsResult[GitHubEvent]] =
           for (e <- eventList)
             yield for {
-                id <- (e \ "id").validate[String]
-                createdAt <- (e \ "created_at").validate[String]
-                eventType <- (e \ "type").validate[String]
-              } yield GitHubEvent(BigInt(id), createdAt, eventType, e.toString())
+              // events
+              id <- (e \ "id").validate[String]
+              createdAt <- (e \ "created_at").validate[String]
+              eventType <- (e \ "type").validate[String]
+              // user (actor)
+              login <- (e \ "actor" \ "login").validate[String]
+              userId <- (e \ "actor" \ "id").validate[Long]
+              avatar <- (e \ "actor" \ "avatar_url").validate[String]
+              // repository
+              repoId <- (e \ "repo" \ "id").validate[Long]
+              repoName <- (e \ "repo" \ "name").validate[String]
+            } yield GitHubEvent(id.toLong, createdAt, eventType, login, userId, avatar,
+                repoId, repoName)
 
         githubEventResults.partition(_.getClass == classOf[JsError]) match {
           case (errors, success) =>
@@ -112,7 +126,7 @@ class GitHubClient {
    * @param lastId The ID of the most recent event from the last call.
    * @return The list of new GitHubEvent's since the last call.
    */
-  def newEvents(eventList: List[GitHubEvent], lastId: Option[BigInt]) =
+  def newEvents(eventList: List[GitHubEvent], lastId: Option[Long]) =
     lastId match {
       case Some(id) =>
         val newEventList = eventList.filter(_.id > id)
