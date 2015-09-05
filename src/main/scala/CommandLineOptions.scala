@@ -20,7 +20,7 @@ object CommandLineOptions {
         case "--output-directory" :: value :: tail ⇒
           nextOption(map ++ Map('outputdir -> value), tail)
         case option :: tail ⇒ println("Unknown option "+option)
-          exit(1)
+          sys.exit(1)
       }
     }
     val options = nextOption(Map(),arglist)

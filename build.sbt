@@ -1,7 +1,7 @@
 lazy val commonSettings = Seq(
   organization := "randonom",
   version := "0.1.0",
-  scalaVersion := "2.10.4"
+  scalaVersion := "2.10.5"
 )
 
 // intellij sbt plugin will create new modules for each project instantiated here (based on val name)
