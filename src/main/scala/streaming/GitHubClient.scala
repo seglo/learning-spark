@@ -1,16 +1,13 @@
-package clients.github
+package streaming
 
-import clients.Config
 import dispatch.Defaults._
 import dispatch._
 import play.api.libs.json._
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 case class GitHubEventResponse(requestId: String, response: String, events: List[GitHubEvent])
-case class GitHubEvent(id: Long, createdAt: String, eventType: String,
-                       login: String, userId: Long, avatar: String, repoId: Long,
-                       repoName: String)
 
 class GitHubClient {
   val name = "GitHub"

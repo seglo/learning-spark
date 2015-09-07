@@ -9,15 +9,19 @@ lazy val `learning-spark` = (project in file(".")).
   settings(commonSettings: _*).
   settings(
     name := "learning-spark",
-    resolvers ++= Seq(
-    ),
+    resolvers ++= Seq("confluent" at "http://packages.confluent.io/maven/"),
     libraryDependencies ++= Seq(
       "org.apache.spark" % "spark-core_2.10" % "1.4.1",
       "org.apache.spark" % "spark-streaming_2.10" % "1.4.1",
       "org.apache.spark" % "spark-streaming-kafka_2.10" % "1.4.1",
       "org.apache.kafka" % "kafka-clients" % "0.8.2.1",
+      "org.apache.avro" % "avro" % "1.7.7",
+      "io.confluent" % "kafka-avro-serializer" % "1.0",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
       "com.typesafe.play" % "play-json_2.10" % "2.4.2",
       "com.typesafe" % "config" % "1.3.0",
+      // scalavro is just used for generating avro schema's, can't use lib to it's full effect
+      // because I couldn't get it working with Spark
+      "com.gensler" %% "scalavro" % "0.6.2" % "test",
       "org.specs2" %% "specs2-core" % "2.4.15" % "test")
   )

@@ -1,4 +1,4 @@
-import clients.github.GitHubClientSpecs
+import streaming.{GitHubClientSpecs, KafkaAvroProducer, GitHubEvent}
 import com.ning.http.client.Response
 import dispatch._, Defaults._
 import org.specs2.mutable._
@@ -73,29 +73,15 @@ class Specs2HelloWorld extends Specification {
   //      success
   //    }
   //  }
-  "json" should {
-    "parse" in {
-
-
-      val json: JsValue = Json.parse( """
-{
-  "user": {
-    "name" : "toto",
-    "age" : 25,
-    "email" : "toto@jmail.com",
-    "isAlive" : true,
-    "friend" : {
-      "name" : "tata",
-      "age" : 20,
-      "email" : "tata@coldmail.com"
-    }
-  }
-}
-                                      """)
-
-      val j = json \ "user" \ "friend" \ "age"
-      for (age <- j.toEither.right)
-        println("age: " + age)
+  "kafka" should {
+    "produce" in {
+      val e = GitHubEvent(123L, "createdAt", "eventType", "login", 123L, "avatar", 123L, "repoName")
+      val p = new KafkaAvroProducer
+      try {
+        p.send("GitHubEventStream", e.toAvro).get()
+      } finally {
+        p.close()
+      }
 
       success
     }
