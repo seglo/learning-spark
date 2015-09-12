@@ -6,19 +6,7 @@ import org.apache.avro.generic.GenericData
 case class GitHubEvent(id: Long, createdAt: String, eventType: String,
                        login: String, userId: Long, avatar: String, repoId: Long,
                        repoName: String) {
-  val toAvro = {
-    val avroRecord = new GenericData.Record(GitHubEvent.schema)
-
-    avroRecord.put("id", id)
-    avroRecord.put("createdAt", createdAt)
-    avroRecord.put("eventType", eventType)
-    avroRecord.put("login", login)
-    avroRecord.put("userId", userId)
-    avroRecord.put("avatar", avatar)
-    avroRecord.put("repoId", repoId)
-    avroRecord.put("repoName", repoName)
-    avroRecord
-  }
+  lazy val toAvro = GitHubEvent.toAvro(this)
 }
 
 object GitHubEvent {
@@ -64,4 +52,28 @@ object GitHubEvent {
       |}
     """.stripMargin
   val schema = parser.parse(avroSchema)
+
+  def toAvro(c: GitHubEvent) = {
+    val avroRecord = new GenericData.Record(GitHubEvent.schema)
+
+    avroRecord.put("id", c.id)
+    avroRecord.put("createdAt", c.createdAt)
+    avroRecord.put("eventType", c.eventType)
+    avroRecord.put("login", c.login)
+    avroRecord.put("userId", c.userId)
+    avroRecord.put("avatar", c.avatar)
+    avroRecord.put("repoId", c.repoId)
+    avroRecord.put("repoName", c.repoName)
+    avroRecord
+  }
+
+  def toCaseClass(r: GenericData.Record) =
+    GitHubEvent(r.get("id").toString.toLong,
+      r.get("createdAt").toString,
+      r.get("eventType").toString,
+      r.get("login").toString,
+      r.get("userId").toString.toLong,
+      r.get("avatar").toString,
+      r.get("repoId").toString.toInt,
+      r.get("repoName").toString)
 }
