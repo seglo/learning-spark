@@ -78,7 +78,7 @@ class Specs2HelloWorld extends Specification {
       val e = GitHubEvent(123L, "createdAt", "eventType", "login", 123L, "avatar", 123L, "repoName")
       val p = new KafkaAvroProducer
       try {
-        p.send("GitHubEventStream", e.toAvro).get()
+        p.send("GitHubEventStream", Seq(e.toAvro))
       } finally {
         p.close()
       }

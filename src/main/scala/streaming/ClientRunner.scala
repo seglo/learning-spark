@@ -4,14 +4,15 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object ClientRunner {
+  val runner = new ClientRunner(new KafkaAvroProducer)
+  def main(args: Array[String]) = runner.run()
+}
+
+class ClientRunner(producer: KafkaAvroProducer) {
   val clients = Seq(new GitHubClient)
   val resolution = Config.get.resolution
-  val producer = new KafkaAvroProducer
 
   val GitHubEventStreamTopic = "GitHubEventStream"
-
-  def main (args: Array[String]) = run()
-
   def run() = {
     var loop = true
     try {
@@ -38,6 +39,6 @@ object ClientRunner {
   def produce(clientName: String, response: GitHubEventResponse) = {
     println("Producing a response for " + clientName)
     println("Events:\n" + response.events.mkString)
-    response.events.foreach(e => producer.send(GitHubEventStreamTopic, e.toAvro))
+    producer.send(GitHubEventStreamTopic, response.events.map(_.toAvro))
   }
 }

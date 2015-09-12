@@ -16,10 +16,11 @@ class KafkaAvroProducer {
 
   val producer = new org.apache.kafka.clients.producer.KafkaProducer[Object, Object](props)
 
-
-  def send(topic: String, record: GenericData.Record) = {
-    val producerRecord = new ProducerRecord[Object, Object](topic, record)
-    producer.send(producerRecord)
+  def send(topic: String, records: Seq[GenericData.Record]) = {
+    records.map { r =>
+      val producerRecord = new ProducerRecord[Object, Object](topic, r)
+      producer.send(producerRecord)
+    }
   }
 
   def close() = producer.close()

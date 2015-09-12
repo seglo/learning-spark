@@ -1,10 +1,8 @@
 package streaming
 
-import util.SparkTest
 import org.apache.log4j.{Level, Logger}
 import org.specs2.mutable.Specification
-
-import Predef.{conforms => _, _}
+import util.{TestAvroSerializer, SparkTest}
 
 class GitHubEventStreamSpec extends Specification {
 
@@ -13,13 +11,16 @@ class GitHubEventStreamSpec extends Specification {
 
   sequential
 
+  val testData = new TestAvroSerializer().read(
+    "src/test/resources/streaming/GitHubEvents.avro.backup",
+    GitHubEvent.schema).map(GitHubEvent.toCaseClass)
+
   "GitHubEventStream" should {
     val g = new GitHubEventStream
 
-    val testData = Seq(GitHubEvent(123L, "createdAt", "eventType", "login", 123L, "avatar", 123L, "repoName"))
-    "count the number of events per interval" in new SparkTest(testData)(g.count) {
-      println(collector)
-      success
+    "count the number of events per interval" in new SparkTest(testData.take(10))(g.count) {
+      collector must have size 1
+      collector(0) mustEqual 10
     }
   }
 }
