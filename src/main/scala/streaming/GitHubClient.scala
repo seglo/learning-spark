@@ -103,8 +103,16 @@ class GitHubClient {
               // repository
               repoId <- (e \ "repo" \ "id").validate[Long]
               repoName <- (e \ "repo" \ "name").validate[String]
-            } yield GitHubEvent(id.toLong, createdAt, eventType, login, userId, avatar,
-                repoId, repoName)
+              // optional fields
+              commentBody <- (e \ "payload" \ "comment" \ "body").validateOpt[String]
+              prBody <- (e \ "payload" \ "pull_request" \ "body").validateOpt[String]
+              language <- (e \ "payload" \ "pull_request" \ "head" \ "repo" \ "language").validateOpt[String]
+            } yield {
+                val commitMessages = (e \ "payload" \ "commits" \\ "message").map(_.as[String])
+                GitHubEvent(id.toLong, createdAt, eventType, login, userId, avatar,
+                  repoId, repoName, commitMessages.toList, commentBody.getOrElse(""),
+                  prBody.getOrElse(""), language.getOrElse(""))
+              }
 
         githubEventResults.partition(_.getClass == classOf[JsError]) match {
           case (errors, success) =>

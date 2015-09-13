@@ -24,6 +24,12 @@ class GitHubEventStream {
       event.repoName
     }.count()
   }
+
+  def countEventType(stream: DStream[GitHubEvent]) = {
+    stream
+      .map(e => (e.eventType, 1))
+      .reduceByKey(_ + _)
+  }
 }
 
 object GitHubEventStream {

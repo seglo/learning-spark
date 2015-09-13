@@ -26,14 +26,9 @@ class TestAvroSerializer() {
     val file = new File(filename)
     val datumReader = new GenericDatumReader[GenericRecord](schema)
     val dataFileReader = new DataFileReader(file, datumReader)
-    var record: GenericRecord = null
     val records = scala.collection.mutable.ArrayBuffer[GenericData.Record]()
     while (dataFileReader.hasNext()) {
-      // Reuse user object by passing it to next(). This saves us from
-      // allocating and garbage collecting many objects for files with
-      // many items.
-      record = dataFileReader.next(record)
-      records.append(record.asInstanceOf[GenericData.Record])
+      records.append(dataFileReader.next().asInstanceOf[GenericData.Record])
     }
     dataFileReader.close()
     records.toSeq

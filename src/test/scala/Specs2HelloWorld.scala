@@ -73,17 +73,17 @@ class Specs2HelloWorld extends Specification {
   //      success
   //    }
   //  }
-  "kafka" should {
-    "produce" in {
-      val e = GitHubEvent(123L, "createdAt", "eventType", "login", 123L, "avatar", 123L, "repoName")
-      val p = new KafkaAvroProducer
-      try {
-        p.send("GitHubEventStream", Seq(e.toAvro))
-      } finally {
-        p.close()
-      }
-
-      success
-    }
-  }
+//  "kafka" should {
+//    "produce" in {
+//      val e = GitHubEvent(123L, "createdAt", "eventType", "login", 123L, "avatar", 123L, "repoName")
+//      val p = new KafkaAvroProducer
+//      try {
+//        p.send("GitHubEventStream", Seq(e.toAvro))
+//      } finally {
+//        p.close()
+//      }
+//
+//      success
+//    }
+//  }
 }

@@ -37,8 +37,8 @@ class ClientRunner(producer: KafkaAvroProducer) {
   }
 
   def produce(clientName: String, response: GitHubEventResponse) = {
-    println("Producing a response for " + clientName)
-    println("Events:\n" + response.events.mkString)
+//    println("Producing a response for " + clientName)
+//    println("Events:\n" + response.events.mkString)
     producer.send(GitHubEventStreamTopic, response.events.map(_.toAvro))
   }
 }
