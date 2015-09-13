@@ -23,7 +23,7 @@ class GitHubEventStreamSpec extends Specification {
     }
 
     "count the number of each type of event" in new SparkTest(testData.take(20))(g.countEventType) {
-      collector must have size 6
+      println(collector)
       collector must containTheSameElementsAs(Seq(
         ("IssueCommentEvent", 1),
         ("PushEvent", 12),
@@ -31,8 +31,25 @@ class GitHubEventStreamSpec extends Specification {
         ("CreateEvent", 2),
         ("ForkEvent", 1),
         ("WatchEvent", 3)))
+    }
+
+    "count events and group by their language if it's supplied" in new SparkTest(testData)(g.countLanguage) {
       println(collector)
-      success
+      collector must containTheSameElementsAs(Seq(
+        ("",315),
+        ("Python",1),
+        ("JavaScript",4),
+        ("C++",2),
+        ("Java",2),
+        ("PHP",2),
+        ("Ruby",3),
+        ("C",1)))
+    }
+
+    "count events that are emoting" in new SparkTest(testData)(g.emoting) {
+      println(collector)
+      collector must containTheSameElementsAs(Seq(
+        ("amusement",1,""), ("swearing",1,"")))
     }
   }
 }
