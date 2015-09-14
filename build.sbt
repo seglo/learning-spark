@@ -19,6 +19,7 @@ lazy val `learning-spark` = (project in file(".")).
       "io.confluent" % "kafka-avro-serializer" % "1.0",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
       "com.typesafe.play" % "play-json_2.10" % "2.4.2",
+      "org.reactivemongo" %% "reactivemongo" % "0.11.7",
       "com.typesafe" % "config" % "1.3.0",
       // scalavro is just used for generating avro schema's, can't use lib to it's full effect
       // because I couldn't get it working with Spark

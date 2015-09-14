@@ -30,6 +30,11 @@ class GitHubEventStream {
       .map(e => (e.language, 1))
       .reduceByKey(_ + _)
 
+//  def countLanguageLookup(stream: DStream[GitHubEvent]) = {
+//
+//    Nil
+//  }
+
   def emoting(stream: DStream[GitHubEvent]) = {
     val emotingExp = Map(
       // concatenated anger and swearing expressions
