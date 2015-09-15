@@ -13,6 +13,8 @@ import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.SparkConf
 
+import scala.concurrent.Await
+
 class GitHubEventStream {
   def makeEvents(stream: DStream[(String, Object)]): DStream[GitHubEvent] =
     stream.map { case (key, record: GenericData.Record) =>
@@ -30,10 +32,16 @@ class GitHubEventStream {
       .map(e => (e.language, 1))
       .reduceByKey(_ + _)
 
-//  def countLanguageLookup(stream: DStream[GitHubEvent]) = {
-//
-//    Nil
-//  }
+  def countLanguageLookup(stream: DStream[GitHubEvent]) = {
+    val m = new MongoConnection
+    stream.transform { rdd =>
+      val repoUrls = rdd.collect().map(e => s"https://github.com/${e.repoName}")
+      val langLookup = Await.result(m.languageLookup(repoUrls), scala.concurrent.duration.Duration.Inf).toMap
+      rdd.map { e =>
+        (e, langLookup.getOrElse(s"https://github.com/${e.repoName}", if (e.language == "") None else Some(e.language)))
+      }
+    }
+  }
 
   def emoting(stream: DStream[GitHubEvent]) = {
     val emotingExp = Map(

@@ -51,5 +51,13 @@ class GitHubEventStreamSpec extends Specification {
       collector must containTheSameElementsAs(Seq(
         ("amusement",1,""), ("swearing",1,"")))
     }
+
+    "count events and map their languages to githubarchive dataset" in new SparkTest(testData)(g.countLanguageLookup) {
+      println(collector)
+      val mappedLangs = collector.filter(_._2 != None)
+      collector.foreach(println)
+      println(s"${mappedLangs.length} of ${collector.length} events were mapped to languages")
+      success
+    }
   }
 }

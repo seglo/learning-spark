@@ -13,7 +13,7 @@ class MongoConnection {
   val db = conn.db("github")
   val coll: BSONCollection = db.collection("repo")
 
-  def languageLookup(repoUrls: Seq[String]): Future[List[(Option[String], Option[String])]] = {
+  def languageLookup(repoUrls: Seq[String]): Future[List[(String, Option[String])]] = {
     var bsArray = BSONArray()
     repoUrls.foreach(r => bsArray = bsArray.add(r))
 
@@ -23,7 +23,7 @@ class MongoConnection {
       .collect[List]()
 
     listFuture.map { list =>
-      list.map(doc => (doc.getAs[String]("repository_url"), doc.getAs[String]("repository_language")))
+      list.map(doc => (doc.getAs[String]("repository_url").get, doc.getAs[String]("repository_language")))
     }
   }
 }
