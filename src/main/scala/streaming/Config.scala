@@ -2,7 +2,7 @@ package streaming
 
 import com.typesafe.config.ConfigFactory
 
-case class Config(githubAccessKey: String, resolution: Int,
+case class Config(githubAccessKey: String, interval: Int,
                   kafkaBrokerList: String, kafkaSchemaRegistry: String,
                   mongoHost: String)
 
@@ -11,7 +11,7 @@ object Config {
 
   val get = Config(
     conf.getString("github-access-key"),
-    conf.getInt("resolution"),
+    conf.getInt("interval"),
     conf.getString("kafka.brokerList"),
     conf.getString("kafka.schemaRegistry"),
     conf.getString("mongoHost"))

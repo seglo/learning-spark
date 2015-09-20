@@ -9,26 +9,24 @@ object ClientRunner {
 }
 
 class ClientRunner(producer: KafkaAvroProducer) {
-  val clients = Seq(new GitHubClient)
-  val resolution = Config.get.resolution
+  val client = new GitHubClient
+  val interval = Config.get.interval
 
   val GitHubEventStreamTopic = "GitHubEventStream"
   def run() = {
     var loop = true
     try {
       while (loop) {
-        for (c <- clients) {
-          val response = Await.result(c.go, Duration.Inf)
+        val response = Await.result(client.go, Duration.Inf)
 
-          response match {
-            case Right(parsedResponse) =>
-              produce(c.name, parsedResponse)
-              Thread.sleep(resolution)
-            case Left(error) =>
-              println("An error occurred: " + error)
-              // kill the loop when an error occurs so we don't make octocat mad
-              loop = false
-          }
+        response match {
+          case Right(parsedResponse) =>
+            produce(client.name, parsedResponse)
+            Thread.sleep(interval)
+          case Left(error) =>
+            println("An error occurred: " + error)
+            // kill the loop when an error occurs so we don't make octocat mad
+            loop = false
         }
       }
     } finally {
