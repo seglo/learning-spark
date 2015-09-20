@@ -25,6 +25,14 @@ class KafkaAvroProducer {
 
   val producer = new org.apache.kafka.clients.producer.KafkaProducer[Object, Object](props)
 
+  /**
+   * Produce a batch of Avro records to Kafka.
+   * Based on new Producer API.  More details:
+   * http://kafka.apache.org/082/javadoc/org/apache/kafka/clients/producer/KafkaProducer.html#send(org.apache.kafka.clients.producer.ProducerRecord,%20org.apache.kafka.clients.producer.Callback)
+   * @param topic Kafka topic
+   * @param records Avro records to produce
+   * @return A Sequence of FutureRecordMetadata instances (based on Java Future)
+   */
   def send(topic: String, records: Seq[GenericData.Record]/*, cb: (RecordMetadata, Exception) => Unit*/) = {
     records.map { r =>
       val producerRecord = new ProducerRecord[Object, Object](topic, r)
