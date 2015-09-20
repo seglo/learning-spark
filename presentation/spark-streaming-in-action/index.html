@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Spark Streaming in Action</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Sean's style overrides -->
+    <style>
+    </style>
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h2>Spark Streaming in Action</h2>
+					<h3>An introduction to Spark Streaming through demonstration</h3>
+                    <img src="img/spark-logo.png" style="border:0;box-shadow: none;margin: 0;background: none;" />
+                    <br />
+                    <img src="img/seglo.jpg" style="height:130px;border:0;box-shadow: none;margin: 0;background: none;" />
+                    <p>
+                        <small>Presented by <a href="http://seanglover.com/">Sean Glover</a> / <a href="http://twitter.com/randonom">@randonom</a></small>
+                    </p>
+          <aside data-markdown class="notes">
+          I'm Sean Glover.  I'm co-organizer of the Toronto Scala & Typesafe Meetup group.  I do some OSS work in node.js *gasp*, but my favourite programming language is Scala by far.  During my day job I work as a Development Team Lead at Ethoca.
+          </aside>
+				</section>
+
+				<section data-markdown>
+          <script type="text/template">
+          <img src="img/warning.gif" style="height:200px;width:400px"/>
+
+          Not really a Data Engineer, but I play one on TV.
+          <aside data-markdown class="notes">
+          Not really a Data Engineer, but I play one on TV - once this talk gets published on YouTube
+
+          Ever since I got into Scala in 2012 I've been more and more intrigued in data processing.  Once dominated by C, python, and Java an increasing number of organizations are recognizing that Scala is a wonderfully descriptive way to build your data platform from.  The emergence of data technologies based on Scala and Akka caught my eye and for the last year I've been doing a lot of self-study.  I've even had brief chances to work with some of these technologies on the job at InMoment and now at Ethoca.
+          </aside>
+          </script>
+				</section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## The Itinerary
+          <div style="text-align:left">
+          <ul>
+          <li class="fragment">Spark&nbsp;&nbsp;<img src="img/spark-logo.png" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" /></li>
+          <li class="fragment">Spark Demo&nbsp;&nbsp;<img src="img/se-logo.png" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" /></li>
+          <li class="fragment">Kafka&nbsp;&nbsp;<img src="img/kafka-logo.png" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" />&nbsp;&nbsp; and the Confluent Stack <img src="img/confluent-logo.png" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" />
+          </li>
+          <ul>
+          <li class="fragment">Message Delivery Semantics</li>
+          </ul>
+          <li class="fragment">Spark Streaming</li>
+          <li class="fragment">Spark Streaming integration with Kafka</li>
+          <li class="fragment" style="text-decoration:line-through">Cluster Infrastructure</li>
+          <li class="fragment">Spark Streaming Demo&nbsp;&nbsp;<img src="img/github-logo.jpg" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" /></li>
+          </ul>
+          </div>
+          <aside data-markdown class="notes">
+          * This is a talk about building a data streaming pipeline using Spark Streaming, and Kafka.
+          * I like practical talks, so I have a couple of demos to show you today.  
+          * I'll first talk about Spark as a general purpose batch processing framework.  I have a small demo based on the StackOverflow.com data that I used in my Spark in Action talk at a Scala meetup in early 2015.
+          * Next we'll talk about Kafka and the Confluent stack built around Kafka.
+            * I'll do a bit of a deep dive into message delivery semantics with Kafka
+          * I'll then describe Spark Streaming and the Kafka spark streaming plugin.
+          * If we have time I'll briefly talk about cluster infrastructure options when using this stack, but unfortunately I didn't have time to integrate this into my demo.
+          * To put everything together I'll demo a Spark streaming application I've written that consumes the GitHub events API.
+          
+          Before I begin I'm curious
+          * Can I get a show of hands of show has used Spark before?
+          * How about Kafka?
+          * Who has used any kind of stream processing or micro-batch framework before such as Storm, Samza, or something else?
+
+          Great, looks like I'm in good company!
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## What is Spark?
+
+          * Apache Spark is a general purpose computing engine
+          * Written in Scala and Spark Streaming is built atop of Akka
+          * Resilient Distributed Dataset (RDD)
+          * API support in **Scala**, Java, and Python
+          * Distributed in-memory datastore
+          * Spark (Scala) REPL
+          
+          (update spark REPL screenshot for latest version)
+          <img src="spark-repl.png" alt="Spark REPL" style="width: 100%;"/>
+          
+          <aside data-markdown class="notes">
+          * Apache Spark started as a research project at Berkley.  It was announced to the world in a paper that describes some of its core concepts really well, and although it's a little out of date it's still a great read.  I'll reference it more than a few times while describing some of Spark's core concepts.
+          * Apache Spark is a general purpose computing engine for large-scale data processing
+          * Spark itself is written in Scala.  Spark Streaming's Receiver implementation is based on the Akka framework.
+            * *You thought this would be the one talk that didn't mention Akka, didn't you?! :)*
+          * The main abstraction of Spark is the Reslient Distributed Dataset
+            * I'll read its definition from the initial Spark paper from Berkeley:
+            * "A resilient distributed dataset (RDD) is a read-only collection of objects partitioned across a set of machines that can be rebuilt if a partition is lost."
+
+            * A cool thing about RDD's is how they respond to failure (i.e. a cluster of the node dies).  The solution is a technique they refer to as lineage.  This is defined in the Berkley paper as such:
+
+            * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute it starting from data in reliable storage. This means that they can always be reconstructed if nodes fail."
+            * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, it has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+
+            * RDD's are implemented as an iterable stream which makes it easy to plugin to existing language collections API's
+
+          * The Spark Scala API allows you to implement complex dataflows that use the standard Scala collections API functions like map, reduce, groupBy, filter, etc.
+
+          * After each step in the dataflow the intermediate data is stored across a distributed memory store
+
+          * You can launch Spark in a modified Scala REPL to experiment with your dataflow in the same way you experiment with your Scala application.
+          * Spark is the first system to allow an efficient, general purpose programming language to be used interactively to process large data sets on the cluster.
+
+          * (REPL image) There's an actual scala prompt at the bottom of this window, but I wanted to show the cool ASCII art!
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## How is Spark any better than MapReduce?
+
+          <div style="text-align:left">
+          <div class="fragment">
+              <ul>
+                  <li>No data flushing between steps <b>iterative jobs faster</b></li>
+              </ul>
+          </div>
+          <br />
+          <div class="fragment">
+              <ul>
+                  <li>Cache large datasets to perform <b>interactive analysis</b></li>
+              </ul>
+          </div>
+          <br />
+          <div class="fragment">
+              <ul>
+                  <li>An <b>intuitive API</b> that improves code readability over MapReduce</li>
+              </ul>
+
+              <pre><code data-trim class="scala">
+                  val file = spark.textFile("hdfs://...")
+                  val counts = file.flatMap(line => line.split(" "))
+                  .map(word => (word, 1))
+                  .reduceByKey(_ + _)
+                  counts.saveAsTextFile("hdfs://...")
+              </code></pre>
+          </div>
+          </div>
+
+          <aside data-markdown class="notes">
+          * Spark is different from MapReduce in a few ways.
+
+          * Iterative jobs. 
+            * To implement these algorithms with Hadoop you're forced to flush to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
+
+          * Interactive analysis.
+            * Hadoop can be used for exploratory analysis on big datasets through SQL interfaces like Pig, but these operations are inherently slow because the data is usually still residing on disk.
+            * Spark allows you to temporarily persist, or 'cache', a transformation or reduction to memory to use it later in your application.
+            * This is useful because often times you want to use a single intermediate representation of your data and branch out to generate several different results
+
+          * The API for Scala allows you to write a lot less code than is typical on the Hadoop map and reduce framework.
+            * MapReduce Data flows are usually more involved than a single map and reduce step
+            * So Instead of trying to rework your algorithm to work with the MapReduce framework, Spark plugs into Scala's Collection API to make the implementation easier to write, read, and reason about.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## SimpleApp.scala
+          <br />
+          <div>
+          <section>
+              <pre><code data-trim class="scala">
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object SimpleApp {
+  def main(args: Array[String]) {
+    val logFile = "YOUR_SPARK_HOME/README.md" // Should be some file on your system
+    val conf = new SparkConf().setAppName("Simple Application")
+    val sc = new SparkContext(conf)
+    val logData = sc.textFile(logFile, 2).cache()
+    val numAs = logData.filter(line => line.contains("a")).count()
+    val numBs = logData.filter(line => line.contains("b")).count()
+    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
+  }
+}
+            </code></pre>
+          </section>
+          </div>
+
+          https://spark.apache.org/docs/latest/quick-start.html
+          
+          <aside data-markdown class="notes">
+          * Sample Application straight from the Spark documentation quick start guide 
+          * What's in this example?
+            * Instantiate a SparkContext
+            * Load in the Spark README markdown file as sample data from the filesystem
+            * `Suggest` that Spark `cache` the dataset in cluster memory so multiple operations can be performed on it.
+            * Count the number of lines that contain a's and lines that contain b's
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Spark Demo <img src="img/se-logo.png" alt="StackExchange" style="width:200px;border:0;box-shadow: none;margin: 0;background: none;"/>
+
+          *"All community-contributed content on Stack Exchange is licensed under the Creative Commons BY-SA 3.0 license. As part of our commitment to that, we release a quarterly dump of all user-contributed data (after carefully sanitizing it to protect user private data, of course)."*
+          https://archive.org/details/stackexchange
+
+          StackOverflow.com data:
+
+          (update this with latest, downloaded on laptop)
+          <div>
+          <section>
+            <pre><code data-trim class="bash">
+$ du stackoverflow.com*/*.xml --total --block-size=G
+1G      stackoverflow.com-Badges/Badges.xml
+8G      stackoverflow.com-Comments/Comments.xml
+46G     stackoverflow.com-PostHistory/PostHistory.xml
+1G      stackoverflow.com-PostLinks/PostLinks.xml
+29G     stackoverflow.com-Posts/Posts.xml
+1G      stackoverflow.com-Tags/Tags.xml
+1G      stackoverflow.com-Users/Users.xml
+7G      stackoverflow.com-Votes/Votes.xml
+90G     total
+            </code></pre>
+          </section>
+          </div>
+          
+          <aside data-markdown class="notes">
+          * The examples I'm going to show you tonight are based StackOverflow data
+
+          * Every quarter, the Stack Exchange network releases all of its data for all of its sites under a Creative Commons license
+          * The dataset contains all Stack Exchange site posts, comments, badges, links, history, votes, users, and tags.
+          * It's scrubbed of all personally identifying information
+          * The dataset is available as a BitTorrent from the Internet Archive, it's about 21 GB compressed
+          * It's serialized as XML with one record per line
+
+          * For my demo I will be working exclusively with StackOverflow.com data which comes out to 90GB of uncompressed XML data
+            * Of that I will only be working with the Posts.xml data which comes out to a paltry 29GB
+            * (but it's just XML so take that with a grain of salt)
+          * Not a huge dataset, but for my limited computational resources it does the trick!
+
+          * *Briefly show Stack Analysis app in IntelliJ.*
+          * *Run job from console with small subset of data that can return relatively fast (10 million rows?).  Turn off verbose debugging so there's not piles of loglines going by.. talk over a few of the important lines*
+
+          Run some commands from the console if there's time to demonstrate the REPL (grab last example from Spark in Action slide)
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## What is Spark Streaming?
+
+          A micro-batch streaming add-on that can be in many different applications.
+          <br />
+          <div>
+            <ul>
+            <li class="fragment">Update machine learning models.</li>
+            <li class="fragment">Detecting anomalies, faults, performance problems, etc. and taking timely action.</li>
+            </ul>
+          </div>
+          <div class="fragment">
+            <ul>
+            <li>Aggregating and processing data on arrival for downstream storage and analytics.</li>
+            </ul>
+            <br /><br />
+            Fast Data whitepaper by Dean Wampler @ Typesafe<br/>
+            http://tinyurl.com/p8zy8kp
+          </div>
+
+          <aside data-markdown class="notes">
+          * Spark Streaming is a micro-batch streaming addon for Apache Spark. A micro-batch is a small batch of events that are processed within a defined interval of time.  This differs from other "data streaming" technologies like Apache Storm or Samza which process events as soon as they're received.  The advantage of using Spark and a micro-batch is that it's possible to re-use the same logic that was written for your batch processing Spark application.
+          * There are many different applications for streaming, but some common use cases are the following
+            * Updating machine learning models as new information arrives.
+              * Databricks has a good post about using k-means in a streaming application to this effect.  See my reference slide for the link.
+            * Detecting anomalies, faults, performance problems, etc. and taking timely action.
+            * Aggregating and processing data on arrival for downstream storage and analytics.
+              * I would assume this is generally the most common use case and my demo is an example
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Spark Streaming concepts
+
+          <div class="fragment">
+          Initialization
+          <pre><code data-trim class="scala">
+val sparkConf = new SparkConf().setAppName("GitHubEventStream").setMaster("local[*]")
+val ssc = new StreamingContext(sparkConf, Seconds(2))
+          </code></pre>
+          </div>
+          <br />
+          <div class="fragment">
+          Discretized Streams
+          <img src="img/streaming-dstream.png" />
+          </div>
+
+          
+          <aside data-markdown class="notes">
+          * Akin to regular Spark batch processing, with Spark Streaming you have a Spark Streaming context.  This type is instantiated iwth the same parameters as a Spark Context, but in addition it also includes an option to set the interval in seconds that represents the time length of a micro-batch.  This could be a value from 1 second to minutes.  What to set this interval to depends on the latency requirements of your app.
+
+          * A core abstraction in Spark Streaming is the DStream, the discretized stream.  Internally, it's made up of a sequence of RDD's.  Each RDD represents an interval in time that as defined by the SparkStreaming Context.  
+          * You work with a DStream the same way you would with an RDD.  Many of the same operations are available such as map, flatMap, filter, reduce, etc.  There are also some stream-specific operations such as updateStateByKey and transform.  
+          * Transform is a useful operation when you want to perform an operation on the underlying RDD of this time slice.  This could be useful if you need to enrich the stream with data retrieved from another system, such as an analytical database.  You can make a batch call to your datasource by transforming over the entire RDD in one step instead of for each record at a time.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Spark Streaming Sliding Window
+
+          <div class="fragment">
+          Sliding Window<br />
+          <img src="img/spark-sliding-window.png" style="height:200px"/>
+          </div>
+          <br />
+          <div class="fragment">
+          **reduceByKeyAndWindow**(*func, invFunc, windowLength, slideInterval, *[*numTasks*])
+          <br /><br />
+          http://spark.apache.org/docs/latest/streaming-programming-guide.html
+          </div>
+          
+          <aside data-markdown class="notes">
+          * There's also a set of operations that work over a sliding window of data.  These operations are known as windowed computations.  To illustrate the effect see the following figure from the Spark Streaming documentation.  Each windowed computation takes a user defined function and two parameters.
+
+            * The window length, which represents how many intervals in the past you want to apply the computation to.
+            * The slide interval, which represents how often to apply the computation.
+
+          * Both the window length and slide interval are defined in seconds and must be a multiple of the interval defined on the Spark Streaming Context.
+
+          * As you would expect there are corresponding reduce and count operations using the sliding window.  Probably the most interesting operation is the reduceByKeyAndWindow overload that uses the inverse reducing function.  This makes the sliding window operation much more performant because it reuses computations from previous window intervals and calculates the delta.  It does this by having both a reduce function and an inverse reduce function which works by adding or substracting counts of counts of keys (or groups) as the window slides.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Spark Streaming Sources
+
+          <br/>
+
+          * **Kafka**
+          * Flume
+          * Kinesis
+          * Twitter
+          * ZeroMQ
+          * MQTT (i.e. WebSphere MQ)
+
+          *and more..*
+          <br />
+          <span style="font-size:15pt">http://search.maven.org/#search|ga|1|g%3A%22org.apache.spark%22%20AND%20v%3A%221.5.0%22</span>
+          
+          <aside data-markdown class="notes">
+          * You can stream from a network socket or file, but there are many more advanced stream sources available:
+            * **Kafka**
+            * Flume
+            * Kinesis
+            * Twitter
+            * ZeroMQ
+            * MQTT
+          * There are more being developed every day that you can learn about on the spark-users group or just by checking out the latest mvnrepository under the org.apache.spark project.
+          * Now let's talk about Kafka...
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Kafka
+
+          <br />
+          "Kafka is a distributed, partitioned, replicated commit log service. It provides the functionality of a messaging system, but with a unique design."
+          
+          <div class="fragment">
+          <p style="font-size:12pt;font-style:italic;margin:0">Confused?  Let me explain..</p>
+          <img class="fragment fade-out" src="img/complicated.gif" />
+          </div>
+
+          <aside data-markdown class="notes">
+          * "Kafka is a distributed, partitioned, replicated commit log service. It provides the functionality of a messaging system, but with a unique design."
+          * *show confused fragment*
+          * This is a mouthful, but I think it will get more clear as I give you a bit of history about it
+          * *goto next to remove distracting confused gif*
+          * Basically, it's a queue, but with different usage semantics than queues like RabbitMQ or ActiveMQ.  Kafka is producer-centric, which means it's designed to handle a firehose of messages that can be picked up by consumers at their leisure.  Their documentation describes it as a shock absorber, which is useful analogy.  A shock absorber on a car will dampen the effect of uneven terrain on the chassis of a car.  This gives a smooth ride for the passengers which we can liken to systems in our internal infrastructure.  Instead of having to support spikey load for all our internal servers, we can rest assured that all the data is captured in a fault tolerant queue and the internal infrastructure can manage its own offset in that queue.
+          * Kafka was originally developed by developers (insert name of developers here) at LinkedIn.  They used it to capture all the user activity on the site - which represent an enormous amount of data that could quickly overwhelm many data processing systems.
+          * Once proven at LinkedIn, Kafka was incubated and released under an Apache license in (insert date here).
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## The Confluent Platform
+
+          <img src="img/confluent-platform.png" />
+          http://docs.confluent.io/1.0.1/platform.html
+
+          <aside data-markdown class="notes">
+          * Since LinkedIn (insert founders of confluent here) decided to start a company where they could build a platform around Kafka and provide commercial support options for enterprise.
+          * A neat project that confluent is working on is called Schema Registry.  It's a way to apply a data structure validation and versioning to your Kafka topic.  Schema Registry itself is a simple repository of AVRO schema's.  In order to use it you use the KafkaAvroSerialization and KafkaAvroDecoder (a confluent library) types when you're interacting with Kafka.  SchemaRegistry can detect if a producer is putting an Avro serialized message onto a topic that is not backwards and raise an exception.  This gives you some guarantee (as long as all your producers are using the Confluent platform) that messages on a particular topic can be deserialized by consumers downstream.
+          * There's lots of other neat things in the confluent platform which I encourage everyone to check out. 
+          </aside>
+          </script>
+        </section>
+
+        <section>
+          <h2>Confluent's Avro Support</h2>
+
+          <div class="fragment">
+          Kafka Avro Serialization library
+          <pre><code data-trim class="scala">
+libraryDependencies += "io.confluent" % "kafka-avro-serializer" % "1.0.1"
+          </code></pre>
+          </div>
+
+          <div class="fragment">
+          Initialization
+          <pre><code data-trim class="scala">
+val props = new Properties()
+
+props.put("bootstrap.servers", "localhost:9092")
+props.put("schema.registry.url", "http://localhost:8081")
+props.put("value.serializer", classOf[KafkaAvroSerializer].getName)
+props.put("key.serializer", classOf[KafkaAvroSerializer].getName)
+
+val producer = KafkaProducer[Object, Object](props)
+          </code></pre>
+          </div>
+
+          <aside data-markdown class="notes">
+          * Avro support
+          * There's lots of other neat things in the confluent platform which I encourage everyone to check out. 
+          </aside>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Message Delivery Semantics for Kafka Producer
+
+          <div class="fragment">
+          <p>Kafka Producer <i>ACK</i>nowledgement</p>
+          <img src="img/marsattacks-ack.gif" style="height:200px" />
+          </div>
+          
+          <div class="fragment">
+          <p>Idempotence (/ˌaɪdɨmˈpoʊtəns/ EYE-dəm-POH-təns)</p>
+          <h3><i>f( f(x) ) = f(x)</i></h3>
+          </div>
+
+          <aside data-markdown class="notes">
+          * In queues and databases there are many ways to enforce different kinds of message delivery semantics. 
+          * When using kafka we must consider how a message is transmitted both from the producer and to the consumer
+          * From the producer's perspective, we need to decide how important it is to us to know that the message has been successfully captured by Kafka.  You might think at first that of course you would want this behaviour, but at what cost?  In Kafka the producer can be configured to only ACK a message once it's been successfully received by the broker.  We can go one step further and configure the producer to ACK once the message has been successfully replicated on at least *n* brokers in the Kafka cluster.  Waiting for an acknowledgement becomes more expensive with the more durability guarantee you want.  Obviously, the most performant solution would be to forego waiting for an ACK at all.  Depending on your domain this may be an acceptable compromise for you.
+          * Ideally, we would like Kafka to be idempotent.  A unique key is assigned by the producer and used to guarantee uniqueness in the log.  In practice this is not a trivial feature to implement in a distributed envionment.  We would want to guarantee that it would [especially] work during failure.  Idempotent Kafka topics is a feature to look out for in future versions of Kafka.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Message Delivery Semantics for Kafka Consumer
+
+          There are three types of message delivery semantics
+          <div>
+          <div style="float:left">
+          <ul>
+          <li>At most once</li>
+          <ul>
+            <li style="font-size:20pt">Messages may be lost or skipped.</li>
+          </ul>
+          <li>At least once</li>
+          <ul>
+            <li style="font-size:20pt">Messages are never lost but may be repeated.</li>
+          </ul>
+          <li>Exactly once</li>
+            <ul>
+            <li style="font-size:20pt">What people actually want!</li>
+            </ul>
+          </ul>
+          </div>
+          </div>
+          <div style="float:right;margin-top:20px">
+            <img src="img/late-delivery.gif" />
+            <p style="font-size:12pt;font-style:italic;margin:0">(4. At most never...)</p>
+          </div>
+          </div>
+
+          <aside data-markdown class="notes">
+          * On the consumer side we have more options.  We can have at most once, exactly once, or at least once semantics when describing message durability in a failure scenario.
+          * A consumer would have at most once semantics if it were to take a message from a topic, persist its offset in the log, and then process the message.  If the consumer were to go down while processing the message, when it comes back up it will get the next log entry instead of the entry that failed to process.
+          * A consumer would have at least once semantics if it were to take a message form a topic, process it, and then persists its offset in the log.  If the consumer went down after processing the message, but before persisting the offset, then when it comes back up it will get the same message it successfully processed.
+          * Obviously the ideal is to consume the message exactly once.  The enterprise solution to this problem is often facilitated by the "2 phase commit" or a "distributed transaction".  This is a complicated dance of transactions working in concert with one another, usually by communicating with a separate distributed transaction manager, to all rollback if any one transaction rolls back.  Aside from being complicated, this also requires your data sources to be compatible with whatever transaction manager technology you're using.  Kafka documentation recommends a simple alternative to this setup: persist your offset with the data you're processing.  If the consumer were to fail during the processing of the message, it would read the latest offset from the destination data source and start back up.  Once the process has completed successfully and sent downstream (with the Kafka offset), then if an error were to occur then your consumer could intelligently lookup the last successfully processed message and read the offset that was committed with it in order to know where in the Kafka log to get the next message.
+          * This simple elegant solution is how spark streaming guarantees exactly once semantics when using Kafka as a streaming source.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Kafka as a Spark Streaming data source
+
+          There are two different ways to use Kafka integration:
+          Receiver and Direct
+
+          <img src="img/no-receiver.jpg" style="height:200px;border:0;box-shadow: none;margin: 0;background: none;"/>
+          
+
+          <aside data-markdown class="notes">
+          * The first Kafka spark streaming plugin had some obvious flaws in its design.  I'll explain the Receiver approach and contrast it with the new experimental (since 1.3.0) approach.
+          * A Receiver is an abstraction provided by Spark to let people develop their own custom data sources for Spark Streaming.  Many of the popular Spark Streaming plugins available under the org.apache.spark banner are implemented this way.  Receivers can be implemented to have reliable delivery semantics if the source supports an acknowledgement.  
+          * The original Kafka receiver could provide exactly once semantics, but it was inefficient and required the duplication of Kafka log data in the Spark writeAheadLog.  It used the Kafka simple consumer which would persist the offset in ZooKeeper and in the writeAheadLog (exactly once semantics).  If data wasn't persisted in the writeAheadLog then it was possible to process the same data twice in a failure scenario (at least once semantics).
+          * The new Direct approach will periodically poll Kafka by topic and partition.  It will map each partition of data to its own RDD .  This is recommended by Kafka as best way to scale your consumers: one consumer per topic partition.
+          * The Direct approach guarantees exactly once semantics by not using the old Simple Consumer that stored the offset in ZooKeeper and instead store the partition and offset in reliable storage as part of the spark streaming checkpoint() operation.  When Spark recovers from failure it will read the latest offset from the last checkpoint and continue from where it left off.
+          * The one downside to the Direct approach is that since the offset isn't managed by ZooKeeper, common Kafka monitoring tools can't be used to monitor the progress of a topic being consumed.  There is a solution to this problem that is described in detail in Spark's Kafka integration documentation.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## Spark Streaming Demo
+          ### GitHub Public /events API <img src="img/github-logo.jpg" style="height:50px;border:0;box-shadow: none;margin: 0;background: none;" />
+
+          <div style="text-align:left">Details</div>
+
+          * 100-200 events per second
+          * 20 different event types: https://developer.github.com/v3/activity/events/types/
+          * Docs inconsistent with actual API &nbsp;&nbsp; :(
+          * Limited to 5000 requests per hour
+            * GitHub support gave me the greenlight to aggressively poll temporarily (thanks [Ivan](https://twitter.com/izuzak))
+
+          <aside data-markdown class="notes">
+          Describe GitHub events api
+            List caveats from notes
+          Describe tech stack (Dispatch, Kafka, Confluent (Schema Registry & Avro Serializer), Spark Stream, ... mongo/play?)
+          Run demo, show events using Confluent's Simple Consumer?
+          Show checkpoints
+          Show micro batches in Spark streaming console output
+          Show final web page?
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## References
+
+          <div style="font-size:10pt;text-align:left;">
+          #### Spark
+          
+          * Spark Documentation - https://spark.apache.org/docs/latest/
+          * Spark: Cluster Computing with Working Sets (Berkeley) - https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Spark-Cluster-Computing-with-Working-Sets.pdf
+          * spark-workshop by Dean Wampler - https://github.com/deanwampler/spark-workshop
+          * Cloudera: Introduction to Apache Spark developer training - http://www.slideshare.net/cloudera/spark-devwebinarslides-final?related=1
+          <br /><br />
+          
+          #### Kafka & Confluent
+          
+          * Kafka Documentation - http://kafka.apache.org/documentation.html
+          * Kafka Idempotent Producer - https://cwiki.apache.org/confluence/display/KAFKA/Idempotent+Producer
+          * Confluent Platform - http://docs.confluent.io/1.0.1/platform.html
+          * Avro Documentation - http://avro.apache.org/docs/1.7.7/
+          <br /><br />
+          
+          #### Spark Streaming
+          
+          * Spark Streaming - http://spark.apache.org/docs/latest/streaming-programming-guide.html
+          * Spark Streaming + Kafka Integration Guide - http://spark.apache.org/docs/latest/streaming-kafka-integration.html
+          * Spark Streaming Custom Receivers - http://spark.apache.org/docs/latest/streaming-custom-receivers.html
+          * Introducing streaming k-means in Spark 1.2 - https://databricks.com/blog/2015/01/28/introducing-streaming-k-means-in-spark-1-2.html
+          * Fast Data: Big Data Evolved whitepaper by Dean Wampler @ Typesafe - https://info.typesafe.com/COLL-20XX-Fast-Data-Big-Data-Evolved-WP_LP.html
+          * Testing Spark Streaming Applications - http://eng.tapjoy.com/blog-list/testing-spark-streaming-applications
+          * Spark and Spark Streaming Unit Testing - http://mkuthan.github.io/blog/2015/03/01/spark-unit-testing/
+          * Kafka Storm Starter (and Spark) - http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/ https://github.com/miguno/kafka-storm-starter 
+          <br /><br />
+
+          #### GitHub Demo and other misc. resources
+
+          * GitHub Events API - https://developer.github.com/v3/activity/events/types/
+          * GitHub Archive - http://www.githubarchive.org https://github.com/igrigorik/githubarchive.org
+          * GitHub 3rd annual Data Challenges - https://github.com/blog/1864-third-annual-github-data-challenge
+          * Dispatch - http://dispatch.databinder.net/
+          * ScalaJson - https://www.playframework.com/documentation/2.2.1/ScalaJson
+
+          </div>
+          <aside data-markdown class="notes">
+          * Dean Wampler is a Scala/Big Data evangelist at Typesafe.
+          * I don't think Dean knows who I am, but I'm a big fan.  If anyone in the crowd knows him personally give him a big kudos from his fan, Sean.  I'll buy'm a beer some day.
+          Dean has a great GitHub repo called the `spark-workshop` that helped me learn a lot about Spark's batch processing capabilities.  More recently he authored a whitepaper about using Spark Streaming with Typesafe's reactive stack, definitely worth checking out too.
+          </aside>
+          </script>
+        </section>
+
+        <section data-markdown>
+          <script type="text/template">
+          ## The End
+
+          For this presentation and sample code.
+
+          https://github.com/seglo/learning-spark/
+
+          #### I'm a Software Engineer working at <a href="http://www.ethoca.com/" alt="ethoca"><img src="img/ethoca.jpg" style="height:40px;border:0;box-shadow: none;margin: 0;background: none;" /></a>
+
+          <img src="img/seglo.jpg" style="height:130px;border:0;box-shadow: none;margin: 0;background: none;" />
+
+          * <a href=mailto:seglo@randonom.com>seglo@randonom.com</a>
+          * http://seanglover.com/
+          * https://github.com/seglo/
+          * [@randonom](https://twitter.com/randonom/)
+          </div>
+
+          <aside data-markdown class="notes">
+          </aside>
+          </script>
+        </section>
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true },
+          { src: 'socket.io/socket.io.js', async: true },
+          { src: 'plugin/notes-server/client.js', async: true },
+          { src: 'plugin/multiplex/master.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
