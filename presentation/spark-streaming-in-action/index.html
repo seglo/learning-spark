@@ -84,7 +84,7 @@
           </ul>
           <li class="fragment">Spark Streaming</li>
           <li class="fragment">Spark Streaming integration with Kafka</li>
-          <li class="fragment" style="text-decoration:line-through">Cluster Infrastructure</li>
+          <li class="fragment">Running on the Cluster with Mesosphere DCOS, <span style="text-decoration:line-through">Demo</span></li>
           <li class="fragment">Spark Streaming Demo&nbsp;&nbsp;<img src="img/github-logo.jpg" style="height: 40px;border:0;box-shadow: none;margin: 0;background: none;" /></li>
           </ul>
           </div>
@@ -561,6 +561,44 @@ val producer = KafkaProducer[Object, Object](props)
         </section>
 
         <section data-markdown>
+            <script type="text/template">
+                ## Spark on Mesosphere DCOS
+
+                <img src="img/mesosphere-logo.png" style="border:0;box-shadow: none;margin: 0;background: none;"/><br />
+                Mesosphere Datacenter Operating System (DCOS)<br/>
+                https://docs.mesosphere.com/<br/>
+                <br />
+
+                Mesosphere Infinity Stack<br />
+                <small>*"The first integrated product enabling companies to turn ubiquitous data to insight and action."*</small><br />
+                Runs on DCOS, made up of Akka, Spark, Kafka, and Cassandra services<br />
+                https://mesosphere.com/infinity/<br />
+
+                <small>Coming soon, 2006Q1</small>
+
+
+                <aside data-markdown class="notes">
+                    Mesosphere has an offering known as the Mesosphere Datacenter Cluster Operating System.
+                    It aims to provide a single interface to deploy distributed services upon such as Cassandra, Kafka, and Spark.
+                    DCOS provides:
+
+                    Application scheduling and scaling
+                    Application fault-tolerance and self-healing
+                    Application prioritization under load
+                    Application service port unification
+                    Application service discovery
+                    Application service end-point elasticity
+                    You can install DCOS on your choice of cloud provider such as AWS, Azure, and Google Cloud Compute, but only AWS is available ATM
+
+                    DCOS will be associated with another initiative from Mesosphere known as the Infinity Stack which is described as "The first integrated product enabling companies to turn ubiquitous data to insight and action."
+                    From what I know it build on top of DCOS and provide an easy way to run, scale, and monitor applications using Akka, Spark, Kafka, and Cassandra.
+
+                    You'll hear more details about this offering through Typesafe, BoldRadius, and other technology partners when it becomes available for beta.
+                </aside>
+            </script>
+        </section>
+
+        <section data-markdown>
           <script type="text/template">
           ## Spark Streaming Demo
           ### GitHub Public /events API <img src="img/github-logo.jpg" style="height:50px;border:0;box-shadow: none;margin: 0;background: none;" />
@@ -589,7 +627,7 @@ val producer = KafkaProducer[Object, Object](props)
           <script type="text/template">
           ## References
 
-          <div style="font-size:10pt;text-align:left;">
+          <div style="font-size:9pt;text-align:left;">
           #### Spark
           
           * Spark Documentation - https://spark.apache.org/docs/latest/
@@ -616,6 +654,12 @@ val producer = KafkaProducer[Object, Object](props)
           * Testing Spark Streaming Applications - http://eng.tapjoy.com/blog-list/testing-spark-streaming-applications
           * Spark and Spark Streaming Unit Testing - http://mkuthan.github.io/blog/2015/03/01/spark-unit-testing/
           * Kafka Storm Starter (and Spark) - http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/ https://github.com/miguno/kafka-storm-starter 
+          <br /><br />
+
+          #### Mesosphere
+
+          * Mesosphere Datacenter Operating System (DCOS) - https://docs.mesosphere.com/
+          * Mesosphere Infinity - https://mesosphere.com/infinity/
           <br /><br />
 
           #### GitHub Demo and other misc. resources
