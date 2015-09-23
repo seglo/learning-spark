@@ -61,11 +61,17 @@
           <script type="text/template">
           <img src="img/warning.gif" style="height:200px;width:400px"/>
 
-          Not really a Data Engineer, but I play one on TV.
           <aside data-markdown class="notes">
-          Not really a Data Engineer, but I play one on TV - once this talk gets published on YouTube
+          A lot of the tech discussed in this talk are either in beta, alpha, or some kind of experimental phase.
 
-          Ever since I got into Scala in 2012 I've been more and more intrigued in data processing.  Once dominated by C, python, and Java an increasing number of organizations are recognizing that Scala is a wonderfully descriptive way to build your data platform from.  The emergence of data technologies based on Scala and Akka caught my eye and for the last year I've been doing a lot of self-study.  I've even had brief chances to work with some of these technologies on the job at InMoment and now at Ethoca.
+          Although I've been learning spark for awhile now in my spare time I must insist to let everyone know that I'm not a data engineer by position, but at this point I feel I've become fairly knowledgeable on the subject.
+
+          Ever since I got into Scala in 2012 I've been more and more intrigued in data processing.  This was an industry once dominated by tech written in C, python, and Java, but an increasing number of organizations are recognizing that Scala is a wonderful technology to build your data platform upon.
+
+          The emergence of data technologies based on Scala and Akka caught my eye and for the last year I've been doing a lot of self-study.
+
+          I've even had brief chances to work with some of these technologies on the job at InMoment and now at Ethoca.
+
           </aside>
           </script>
 				</section>
@@ -133,8 +139,7 @@
 
             * A cool thing about RDD's is how they respond to failure (i.e. a cluster of the node dies).  The solution is a technique they refer to as lineage.  This is defined in the Berkley paper as such:
 
-            * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute it starting from data in reliable storage. This means that they can always be reconstructed if nodes fail."
-            * "RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, it has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
+            * "The elements of an RDD need not exist in physical storage; instead, a handle to an RDD contains enough information to compute it starting from data in reliable storage. This means that they can always be reconstructed if nodes fail... RDDs achieve fault tolerance through a notion of lineage: if a partition of an RDD is lost, it has enough information about how it was derived from other RDDs to be able to rebuild just that partition"
 
             * RDD's are implemented as an iterable stream which makes it easy to plugin to existing language collections API's
 
@@ -143,7 +148,7 @@
           * After each step in the dataflow the intermediate data is stored across a distributed memory store
 
           * You can launch Spark in a modified Scala REPL to experiment with your dataflow in the same way you experiment with your Scala application.
-          * Spark is the first system to allow an efficient, general purpose programming language to be used interactively to process large data sets on the cluster.
+          * Spark is the first system to allow an efficient general purpose programming language to be used interactively to process large data sets on the cluster.
 
           * (REPL image) There's an actual scala prompt at the bottom of this window, but I wanted to show the cool ASCII art!
           </aside>
@@ -186,7 +191,7 @@
           * Spark is different from MapReduce in a few ways.
 
           * Iterative jobs. 
-            * To implement these algorithms with Hadoop you're forced to flush to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
+            * To implement iterative algorithms (such as for Machine Learning) with Hadoop you're forced to flush to disk and then re-read your data between reduce steps.  Spark keeps this data in memory, which obviously has an enormous performance increase if your dataflow contains many steps.
 
           * Interactive analysis.
             * Hadoop can be used for exploratory analysis on big datasets through SQL interfaces like Pig, but these operations are inherently slow because the data is usually still residing on disk.
@@ -195,7 +200,7 @@
 
           * The API for Scala allows you to write a lot less code than is typical on the Hadoop map and reduce framework.
             * MapReduce Data flows are usually more involved than a single map and reduce step
-            * So Instead of trying to rework your algorithm to work with the MapReduce framework, Spark plugs into Scala's Collection API to make the implementation easier to write, read, and reason about.
+            * So Instead of trying to rework your algorithm to work with the MapReduce framework, Spark uses much of the same Scala Collection API DSL to make the implementation easier to write, read, and reason about.
           </aside>
           </script>
         </section>
@@ -248,7 +253,6 @@ object SimpleApp {
 
           StackOverflow.com data:
 
-          (update this with latest, downloaded on laptop)
           <div>
           <section>
             <pre><code data-trim class="bash">
@@ -272,7 +276,7 @@ $ du stackoverflow.com*/*.xml --total --block-size=G
           * Every quarter, the Stack Exchange network releases all of its data for all of its sites under a Creative Commons license
           * The dataset contains all Stack Exchange site posts, comments, badges, links, history, votes, users, and tags.
           * It's scrubbed of all personally identifying information
-          * The dataset is available as a BitTorrent from the Internet Archive, it's about 21 GB compressed
+          * The dataset is available as direct download or a BitTorrent from the Internet Archive, it's about 21 GB compressed
           * It's serialized as XML with one record per line
 
           * For my demo I will be working exclusively with StackOverflow.com data which comes out to 90GB of uncompressed XML data
@@ -297,7 +301,7 @@ $ du stackoverflow.com*/*.xml --total --block-size=G
           <div>
             <ul>
             <li class="fragment">Update machine learning models.</li>
-            <li class="fragment">Detecting anomalies, faults, performance problems, etc. and taking timely action.</li>
+            <li class="fragment">Detecting anomalies, faults, performance problems, etc. and taking timely action. (i.e. processing logs)</li>
             </ul>
           </div>
           <div class="fragment">
@@ -313,10 +317,12 @@ $ du stackoverflow.com*/*.xml --total --block-size=G
           * Spark Streaming is a micro-batch streaming addon for Apache Spark. A micro-batch is a small batch of events that are processed within a defined interval of time.  This differs from other "data streaming" technologies like Apache Storm or Samza which process events as soon as they're received.  The advantage of using Spark and a micro-batch is that it's possible to re-use the same logic that was written for your batch processing Spark application.
           * There are many different applications for streaming, but some common use cases are the following
             * Updating machine learning models as new information arrives.
-              * Databricks has a good post about using k-means in a streaming application to this effect.  See my reference slide for the link.
-            * Detecting anomalies, faults, performance problems, etc. and taking timely action.
-            * Aggregating and processing data on arrival for downstream storage and analytics.
-              * I would assume this is generally the most common use case and my demo is an example
+              * Databricks has a good post about using k-means in a streaming application to this effect.  Some of their work has been brought back into Spark's MLLib.  See my reference slide for the link.
+            * Detecting anomalies, faults, performance problems, etc. and then choose to alert or take timely action (i.e. when processing logs)
+            * Probably the most common use case is for aggregating and processing data on arrival for downstream storage and analytics.
+              * This is the use case I use in my demo.
+
+            * This nice summarized list is from a recent whitepaper by Dean Wampler @ Typesafe.
           </aside>
           </script>
         </section>
@@ -340,10 +346,13 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
 
           
           <aside data-markdown class="notes">
-          * Akin to regular Spark batch processing, with Spark Streaming you have a Spark Streaming context.  This type is instantiated iwth the same parameters as a Spark Context, but in addition it also includes an option to set the interval in seconds that represents the time length of a micro-batch.  This could be a value from 1 second to minutes.  What to set this interval to depends on the latency requirements of your app.
+          * Initialization
+          * Akin to regular Spark batch processing, with Spark Streaming you have a Spark Streaming context.  This type is instantiated with the same parameters as a Spark Context, but in addition it also includes an option to set the interval in seconds that represents the time length of a micro-batch.  This could be a value from 1 second to minutes.  What to set this interval to depends on the latency requirements of your app.
 
-          * A core abstraction in Spark Streaming is the DStream, the discretized stream.  Internally, it's made up of a sequence of RDD's.  Each RDD represents an interval in time that as defined by the SparkStreaming Context.  
-          * You work with a DStream the same way you would with an RDD.  Many of the same operations are available such as map, flatMap, filter, reduce, etc.  There are also some stream-specific operations such as updateStateByKey and transform.  
+          
+          * DStream
+          * A core abstraction in Spark Streaming is the DStream, the discretized stream.  Internally, it's made up of a sequence of RDD's.  Each RDD represents an interval in time as defined by the interval in the SparkStreaming Context.  
+          * You work with a DStream the same way you would with an RDD.  Many of the same operations are available such as map, flatMap, filter, reduce, etc.  Each takes a higher order function which returns a single record.  There are also many stream-specific operations such as the sliding window operations, iteration over RDD's, and transform.
           * Transform is a useful operation when you want to perform an operation on the underlying RDD of this time slice.  This could be useful if you need to enrich the stream with data retrieved from another system, such as an analytical database.  You can make a batch call to your datasource by transforming over the entire RDD in one step instead of for each record at a time.
           </aside>
           </script>
@@ -365,14 +374,16 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
           </div>
           
           <aside data-markdown class="notes">
-          * There's also a set of operations that work over a sliding window of data.  These operations are known as windowed computations.  To illustrate the effect see the following figure from the Spark Streaming documentation.  Each windowed computation takes a user defined function and two parameters.
+          * The Sliding Window is a neat concept that allows you to reference data in previous micro-batches in order to analyze data over a larger window of time.  For example, you may want to aggregate events see insights of events over the last 5 minutes, or the last 5 hours. 
 
-            * The window length, which represents how many intervals in the past you want to apply the computation to.
+          * There's a set of operations that work over a sliding window of data that are known as windowed computations.  To illustrate the effect see the following figure from the Spark Streaming documentation.  Each windowed computation takes a user defined function and two parameters.
+
+            * The window length, which represents how many intervals in the past you want to apply the computation to.  As the sliding window moves forward in time, batches that fall outside this window length are discarded from future computations.
             * The slide interval, which represents how often to apply the computation.
 
           * Both the window length and slide interval are defined in seconds and must be a multiple of the interval defined on the Spark Streaming Context.
 
-          * As you would expect there are corresponding reduce and count operations using the sliding window.  Probably the most interesting operation is the reduceByKeyAndWindow overload that uses the inverse reducing function.  This makes the sliding window operation much more performant because it reuses computations from previous window intervals and calculates the delta.  It does this by having both a reduce function and an inverse reduce function which works by adding or substracting counts of counts of keys (or groups) as the window slides.
+          * As you would expect, there are corresponding reduce and count operations using all the data that spans the sliding window.  Probably the most interesting operation is the reduceByKeyAndWindow overload that uses the inverse reducing function.  This makes the sliding window operation much more performant because it reuses computations from previous window intervals and calculates the delta.  It does this by having both a reduce function and an inverse reduce function.  The inverse reduce functions works by performing the inverse operation of the reduce function, for example subtracting counts rather than adding them.
           </aside>
           </script>
         </section>
@@ -388,7 +399,7 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
           * Kinesis
           * Twitter
           * ZeroMQ
-          * MQTT (i.e. WebSphere MQ)
+          * MQTT 
 
           *and more..*
           <br />
@@ -402,7 +413,7 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
             * Twitter
             * ZeroMQ
             * MQTT
-          * There are more being developed every day that you can learn about on the spark-users group or just by checking out the latest mvnrepository under the org.apache.spark project.
+          * There are more being developed every day that you can learn about on the spark-users group or just by checking out the latest libraries available on mvnrepository under the org.apache.spark project.
           * Now let's talk about Kafka...
           </aside>
           </script>
@@ -425,9 +436,10 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
           * *show confused fragment*
           * This is a mouthful, but I think it will get more clear as I give you a bit of history about it
           * *goto next to remove distracting confused gif*
-          * Basically, it's a queue, but with different usage semantics than queues like RabbitMQ or ActiveMQ.  Kafka is producer-centric, which means it's designed to handle a firehose of messages that can be picked up by consumers at their leisure.  Their documentation describes it as a shock absorber, which is useful analogy.  A shock absorber on a car will dampen the effect of uneven terrain on the chassis of a car.  This gives a smooth ride for the passengers which we can liken to systems in our internal infrastructure.  Instead of having to support spikey load for all our internal servers, we can rest assured that all the data is captured in a fault tolerant queue and the internal infrastructure can manage its own offset in that queue.
-          * Kafka was originally developed by developers (insert name of developers here) at LinkedIn.  They used it to capture all the user activity on the site - which represent an enormous amount of data that could quickly overwhelm many data processing systems.
-          * Once proven at LinkedIn, Kafka was incubated and released under an Apache license in (insert date here).
+          * Basically, it's a queue, but with different usage semantics than queues like RabbitMQ or ActiveMQ.  Kafka is producer-centric, which means it's designed to handle a firehose of messages that can be picked up by consumers at their leisure.  
+          * Their documentation describes it as a shock absorber, which is useful analogy.  A shock absorber on a car will dampen the effect of uneven terrain on the chassis of a car.  This gives a smooth ride for the passengers which we can liken to systems in our internal infrastructure.  Instead of having to support spikey load for all our internal servers and applications, we can rest assured that all the data is captured in a fault tolerant queue and the internal infrastructure can manage its own offset in that queue.
+          * Kafka was originally developed by LinkedIn.  A lead engineer of the project, Jay Kreps described Kafka as the "central nervous system" of LinkedIn.  One of the principal reasons it was created was to capture all the user activity on the site - which represent an enormous amount of data that could quickly overwhelm many data processing systems.
+          * Once proven at LinkedIn, it was open sourced in 2011.  It was incubated by Apache and graduated in 2012.
           </aside>
           </script>
         </section>
@@ -440,9 +452,10 @@ val ssc = new StreamingContext(sparkConf, Seconds(2))
           http://docs.confluent.io/1.0.1/platform.html
 
           <aside data-markdown class="notes">
-          * Since LinkedIn (insert founders of confluent here) decided to start a company where they could build a platform around Kafka and provide commercial support options for enterprise.
-          * A neat project that confluent is working on is called Schema Registry.  It's a way to apply a data structure validation and versioning to your Kafka topic.  Schema Registry itself is a simple repository of AVRO schema's.  In order to use it you use the KafkaAvroSerialization and KafkaAvroDecoder (a confluent library) types when you're interacting with Kafka.  SchemaRegistry can detect if a producer is putting an Avro serialized message onto a topic that is not backwards and raise an exception.  This gives you some guarantee (as long as all your producers are using the Confluent platform) that messages on a particular topic can be deserialized by consumers downstream.
-          * There's lots of other neat things in the confluent platform which I encourage everyone to check out. 
+          * Since then, Jay Kreps and some of the other engineers who worked on Kafka at LinkedIn decided to start a company.  They wanted to build a platform around Kafka and also provide commercial support options for enterprise.
+          * (talk over network diagram)
+          * A neat project that confluent is working on is called Schema Registry.  It's a way to apply data validation and versioning to your Kafka topic.  Schema Registry itself is a simple repository of AVRO schema's.  In order to use it you use the KafkaAvroSerialization and KafkaAvroDecoder (a confluent library) types when you're interacting with Kafka.  SchemaRegistry can detect if a producer is putting an Avro serialized message onto a topic that is not backwards and raise an exception.  This gives you some guarantee (as long as all your producers are using the Confluent platform) that messages on a particular topic can be deserialized by consumers downstream.
+          * The confluent platform recently had its 1.0 release and is currently at version 1.0.1
           </aside>
           </script>
         </section>
@@ -473,7 +486,7 @@ val producer = KafkaProducer[Object, Object](props)
 
           <aside data-markdown class="notes">
           * Avro support
-          * There's lots of other neat things in the confluent platform which I encourage everyone to check out. 
+          * (talk over both fragments)
           </aside>
         </section>
 
@@ -494,8 +507,14 @@ val producer = KafkaProducer[Object, Object](props)
           <aside data-markdown class="notes">
           * In queues and databases there are many ways to enforce different kinds of message delivery semantics. 
           * When using kafka we must consider how a message is transmitted both from the producer and to the consumer
-          * From the producer's perspective, we need to decide how important it is to us to know that the message has been successfully captured by Kafka.  You might think at first that of course you would want this behaviour, but at what cost?  In Kafka the producer can be configured to only ACK a message once it's been successfully received by the broker.  We can go one step further and configure the producer to ACK once the message has been successfully replicated on at least *n* brokers in the Kafka cluster.  Waiting for an acknowledgement becomes more expensive with the more durability guarantee you want.  Obviously, the most performant solution would be to forego waiting for an ACK at all.  Depending on your domain this may be an acceptable compromise for you.
-          * Ideally, we would like Kafka to be idempotent.  A unique key is assigned by the producer and used to guarantee uniqueness in the log.  In practice this is not a trivial feature to implement in a distributed envionment.  We would want to guarantee that it would [especially] work during failure.  Idempotent Kafka topics is a feature to look out for in future versions of Kafka.
+          
+          * (show mars attack fragment)
+          * From the producer's perspective, we need to decide how important it is to us to know that the message has been successfully captured by Kafka.  You might think at first that of course you would want this behaviour, but at what cost?  In Kafka the producer can be configured to only acknowledge a message once it's been successfully received by the broker.  
+          * We can go one step further and configure the producer to acknowledge once the message has been successfully replicated on as many brokers as defined in the topic's replication settings.  
+          * To have a higher message durability guarantee you trade off for the latency between the producer sending the message and waiting for its acknowledgement.  Obviously, the most performant solution would be to forego waiting for an acknowledgement at all, and depending on your domain this may be an acceptable compromise for you.
+          
+          * Ideally, we would like Kafka to be idempotent.  A unique key is assigned by the producer and used to guarantee uniqueness in the log.  If you read about this in the Kafka wiki page it mentions that in practice this is not a trivial feature to implement in a distributed envionment and that we would want to guarantee that it would work during failure.  
+          * Idempotent Kafka topics are a feature to look out for in future versions of Kafka.
           </aside>
           </script>
         </section>
@@ -531,9 +550,11 @@ val producer = KafkaProducer[Object, Object](props)
 
           <aside data-markdown class="notes">
           * On the consumer side we have more options.  We can have at most once, exactly once, or at least once semantics when describing message durability in a failure scenario.
-          * A consumer would have at most once semantics if it were to take a message from a topic, persist its offset in the log, and then process the message.  If the consumer were to go down while processing the message, when it comes back up it will get the next log entry instead of the entry that failed to process.
-          * A consumer would have at least once semantics if it were to take a message form a topic, process it, and then persists its offset in the log.  If the consumer went down after processing the message, but before persisting the offset, then when it comes back up it will get the same message it successfully processed.
-          * Obviously the ideal is to consume the message exactly once.  The enterprise solution to this problem is often facilitated by the "2 phase commit" or a "distributed transaction".  This is a complicated dance of transactions working in concert with one another, usually by communicating with a separate distributed transaction manager, to all rollback if any one transaction rolls back.  Aside from being complicated, this also requires your data sources to be compatible with whatever transaction manager technology you're using.  Kafka documentation recommends a simple alternative to this setup: persist your offset with the data you're processing.  If the consumer were to fail during the processing of the message, it would read the latest offset from the destination data source and start back up.  Once the process has completed successfully and sent downstream (with the Kafka offset), then if an error were to occur then your consumer could intelligently lookup the last successfully processed message and read the offset that was committed with it in order to know where in the Kafka log to get the next message.
+          * A consumer would have at most once semantics if it were to take a message from a topic, persist its offset in the log, and then process the message.  If the consumer were to go down while processing the message, when it comes back up it will get the next log entry instead of the entry that failed to process.  This could possibly result in skipping messages.
+          * A consumer would have at least once semantics if it were to take a message from a topic, process it, and then persists its offset in the log somewhere.  If the consumer went down after processing the message, but before persisting the offset, then when it comes back up it will get the same message it successfully processed.
+          * Obviously the ideal is to consume the message exactly once.  The enterprise solution to this problem is often facilitated by the "2 phase commit" or a "distributed transaction".  This is a complicated dance of transactions working in concert with one another.  
+          * It's facilitated by communicating with a separate distributed transaction manager.  If one transaction fails then all transactions will be rolled back. Aside from being complicated, this also requires your data sources to be compatible with whatever transaction manager technology you're using.  
+          * Kafka documentation recommends a simple alternative to this setup: persist your offset with the data you're processing.  Once the record has been processed successfully and persisted somewhere with the Kafka offset, then if an error were to occur, your consumer could intelligently lookup the last successfully processed message and read the offset that was committed with it.  The cosnumer can then resume processing messages from where it left off.
           * This simple elegant solution is how spark streaming guarantees exactly once semantics when using Kafka as a streaming source.
           </aside>
           </script>
@@ -550,9 +571,12 @@ val producer = KafkaProducer[Object, Object](props)
           
 
           <aside data-markdown class="notes">
-          * The first Kafka spark streaming plugin had some obvious flaws in its design.  I'll explain the Receiver approach and contrast it with the new experimental (since 1.3.0) approach.
+          * There are two different ways to use Kafka integration: Receiver and Direct
+          * The first Kafka spark streaming plugin had some obvious flaws in its design.  I'll explain the Receiver approach and contrast it with the new experimental direct approach.
           * A Receiver is an abstraction provided by Spark to let people develop their own custom data sources for Spark Streaming.  Many of the popular Spark Streaming plugins available under the org.apache.spark banner are implemented this way.  Receivers can be implemented to have reliable delivery semantics if the source supports an acknowledgement.  
-          * The original Kafka receiver could provide exactly once semantics, but it was inefficient and required the duplication of Kafka log data in the Spark writeAheadLog.  It used the Kafka simple consumer which would persist the offset in ZooKeeper and in the writeAheadLog (exactly once semantics).  If data wasn't persisted in the writeAheadLog then it was possible to process the same data twice in a failure scenario (at least once semantics).
+          * The original Kafka receiver could provide exactly once semantics, but it was inefficient and required the duplication of Kafka log data in the Spark writeAheadLog.  
+            * It used the Kafka simple consumer which would persist the offset in ZooKeeper and in the writeAheadLog (exactly once semantics).  
+            * If data wasn't persisted in the writeAheadLog then it was possible to process the same data twice in a failure scenario (at least once semantics).
           * The new Direct approach will periodically poll Kafka by topic and partition.  It will map each partition of data to its own RDD .  This is recommended by Kafka as best way to scale your consumers: one consumer per topic partition.
           * The Direct approach guarantees exactly once semantics by not using the old Simple Consumer that stored the offset in ZooKeeper and instead store the partition and offset in reliable storage as part of the spark streaming checkpoint() operation.  When Spark recovers from failure it will read the latest offset from the last checkpoint and continue from where it left off.
           * The one downside to the Direct approach is that since the offset isn't managed by ZooKeeper, common Kafka monitoring tools can't be used to monitor the progress of a topic being consumed.  There is a solution to this problem that is described in detail in Spark's Kafka integration documentation.
@@ -574,7 +598,7 @@ val producer = KafkaProducer[Object, Object](props)
                 Runs on DCOS, made up of Akka, Spark, Kafka, and Cassandra services<br />
                 https://mesosphere.com/infinity/<br />
 
-                <small>Coming soon, 2006Q1</small>
+                <small>Coming soon, 2016Q1</small>
 
 
                 <aside data-markdown class="notes">
@@ -588,6 +612,7 @@ val producer = KafkaProducer[Object, Object](props)
                     Application service port unification
                     Application service discovery
                     Application service end-point elasticity
+                    
                     You can install DCOS on your choice of cloud provider such as AWS, Azure, and Google Cloud Compute, but only AWS is available ATM
 
                     DCOS will be associated with another initiative from Mesosphere known as the Infinity Stack which is described as "The first integrated product enabling companies to turn ubiquitous data to insight and action."
@@ -719,6 +744,7 @@ val producer = KafkaProducer[Object, Object](props)
 				progress: true,
 				history: true,
 				center: true,
+        slideNumber: true,
 
 				transition: 'slide', // none/fade/slide/convex/concave/zoom
 
