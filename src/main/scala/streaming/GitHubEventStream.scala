@@ -1,6 +1,6 @@
 package streaming
 
-import java.util.Properties
+import java.util.{Date, Properties}
 import _root_.kafka.serializer.StringDecoder
 import org.apache.avro.generic.GenericData
 import org.apache.spark.streaming.dstream.DStream
@@ -60,8 +60,37 @@ class GitHubEventStream {
         for{
           (emotion, exp) <- emotingExp
           isDefined <- exp.findFirstIn(msg)
-        } yield (emotion, 1, e.language)/*, msg)*/
+        } yield (emotion, 1)/*, e.language, msg)*/
       }
+  }
+
+  def emotingByWindow(stream: DStream[GitHubEvent]) = {
+    emoting(stream)
+      .reduceByKeyAndWindow((a,b)=>a+b, Seconds(60))
+  }
+
+  def reduceByWindow(stream: DStream[GitHubEvent]) = {
+    stream
+      .map(e => (e.eventType, 1))
+      .reduceByKeyAndWindow((a,b) => a+b, Seconds(20))
+  }
+
+  def languageByWindow(stream: DStream[GitHubEvent]) = {
+
+    countLanguageLookup(stream)
+      .map {
+        case (e:GitHubEvent, lang:Option[String]) => (lang.getOrElse("(Unknown)"), 1)
+      }
+      .reduceByKeyAndWindow((a,b)=>a+b, Seconds(180))
+      .foreachRDD { rdd =>
+        val date = new Date().getTime
+        rdd.foreachPartition { records =>
+          //records.foreach(println)
+          records.foreach(c => MongoConnection.connection.insert(c, date))
+        }
+      }
+    // using reduceByKeyAndWindow with inverted reduce function requires checkpointing (on fault tolerant disk, i.e. HDFS)
+    //.reduceByKeyAndWindow((a,b)=>a+b, (a,b)=>a-b, Seconds(3600))
   }
 }
 
@@ -90,7 +119,7 @@ object GitHubEventStream {
 
     val g = new GitHubEventStream
     val eventStream = g.makeEvents(messages)
-    g.count(eventStream).print()
+    g.languageByWindow(eventStream)//.print(100)
 
     // Start the computation
     ssc.start()

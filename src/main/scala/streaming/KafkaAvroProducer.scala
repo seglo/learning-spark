@@ -1,13 +1,10 @@
 package streaming
 
 import java.util.Properties
-import java.util.concurrent.CompletionStage
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import org.apache.avro.generic.GenericData
 import org.apache.kafka.clients.producer.{Callback, RecordMetadata, ProducerConfig, ProducerRecord}
-
-import scala.compat.java8.FutureConverters
 
 class KafkaAvroProducer {
   val props = new Properties()

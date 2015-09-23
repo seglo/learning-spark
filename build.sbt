@@ -17,7 +17,6 @@ lazy val `learning-spark` = (project in file(".")).
       "org.apache.avro" % "avro" % "1.7.7",
       "org.apache.kafka" % "kafka-clients" % "0.8.2.2",
       "io.confluent" % "kafka-avro-serializer" % "1.0.1",
-      "org.scala-lang.modules" % "scala-java8-compat_2.10" % "0.5.0",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
       "com.typesafe.play" % "play-json_2.10" % "2.4.3",
       "org.reactivemongo" %% "reactivemongo" % "0.11.7",
