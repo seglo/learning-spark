@@ -1,14 +1,10 @@
-import java.util.Date
-import java.net.URI
 import java.text.SimpleDateFormat
-import org.apache.commons.io.FileUtils
+import java.util.Date
+
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
-import scala.collection.JavaConversions._
+
 import scala.xml.XML
-import CommandLineOptions._
 
 object StackAnalysis {
   def main (args: Array[String]) {
@@ -19,25 +15,24 @@ object StackAnalysis {
 
     try {
       // Input dataset
-      val inputFile = options.get('inputfile)
-        .getOrElse("data/stackexchange/stackoverflow.com-Posts/Posts100k.xml").toString
+      val inputFile = options.getOrElse('inputfile, "data/stackexchange/stackoverflow.com-Posts/Posts100k.xml").toString
 
       // Optional directory
-      val outputDir = options.get('outputdir)
+      val outputDirOption = options.get('outputdir)
 
       try {
         val rows = sc.textFile(inputFile)
         val sqs = scalaQuestions(rows)
         
-        println(s"Scala question count ${sqs.count}") 
+        println(s"Scala question count ${sqs.count()}")
         
         val tc = tagCounts(sqs)
 
         val sqsByMonth = scalaQuestionsByMonth(sqs)
-    
-        outputDir match {
+
+        outputDirOption match {
           // NOTE: When writing to HDFS use `hdfs dfs -getmerge` to retrieve fully constructed file
-          case Some(outputDir) ⇒ {
+          case Some(outputDir) ⇒
             println("Writing output files to disk")
             
             val outputDirStr = outputDir.toString
@@ -46,7 +41,6 @@ object StackAnalysis {
             
             tc.saveAsTextFile(stcFile)
             sqsByMonth.saveAsTextFile(sqbmFile)
-          }
           case None ⇒ println("No output file provided.")
         }
       } finally {
@@ -73,10 +67,9 @@ object StackAnalysis {
           val tags = (xml \ "@Tags").text
           List((postTypeId, creationDate, tags))
         } catch {
-          case ex: Exception ⇒ {
+          case ex: Exception ⇒
             println(s"failed to parse line: $l")
             Nil
-          }
         }
       })
       // Format create date string
@@ -92,13 +85,13 @@ object StackAnalysis {
       // Filter question posts by those that contain Scala tags
       .filter { case (id, creationDate, tags) ⇒ tags.contains("scala") }
       // Cache this dataflow for other uses
-      .cache
+      .cache()
   }
 
   def tagCounts(qs: RDD[(Int, Date, List[String])]) = {
     qs
       // If this question contains a scala tag then return a collection of all other tags
-      .flatMap { case (postTypeId, creationDate, tags) ⇒ {
+      .flatMap { case (postTypeId, creationDate, tags) ⇒
         val otherTags = tags.diff(List("scala"))
         // Return key value pair (tuple) with tag name as the key and a base number
         // to sum in subsequent reduce step.
@@ -106,14 +99,14 @@ object StackAnalysis {
           otherTags.map(tag ⇒ (tag, 1))
         else
           Nil
-      }}
+      }
       // `reduceByKey` groups by key (tag name) and performs a reduction for all elements
       // that have the same key
       .reduceByKey((a, b) ⇒ a + b)
       // Swap tuple values for sortByKey
       .map { case (tag, count) ⇒ (count, tag) }
       // Sort by tag counts in descending order
-      .sortByKey(false)
+      .sortByKey(ascending = false)
   }
 
   def scalaQuestionsByMonth(sqs: RDD[(Int, Date, List[String])]) = {
@@ -126,6 +119,6 @@ object StackAnalysis {
       // Sum reduction by key
       .reduceByKey((a, b) ⇒ a + b) 
       // Sort by month
-      .sortByKey(true)
+      .sortByKey(ascending = true)
   }
 }

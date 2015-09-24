@@ -1,5 +1,5 @@
 #!/bin/sh
-SPARK_HOME=~/spark-1.3.0-bin-hadoop2.4
+SPARK_HOME=~/spark-1.4.1-bin-hadoop2.6
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
