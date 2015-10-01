@@ -28,24 +28,23 @@ class GitHubClient {
    * @return A future Either that represents Http or Parsing errors or
    *         the fully parsed list of Events.
    */
-  def go = Future {
-    // this sucks, but how else to yield a Future[Either[String, List[GitHubEvent]]]?
-    val either = Await.result(events(lastETag), Duration.Inf)
-    for {
-      res <- either.right
-      eventList <- createEvents(res.getResponseBody, lastId).right
-    } yield {
-      println("Headers" + res.getHeaders)
-      println("Response body" + res.getResponseBody)
+  def go = events(lastETag).map { either =>
+      for {
+        res <- either.right
+        eventList <- createEvents(res.getResponseBody, lastId).right
+      } yield {
+        println("Headers" + res.getHeaders)
+        println("Response body" + res.getResponseBody)
 
-      val requestId = res.getHeader("X-GitHub-Request-Id")
-      val responseBody = res.getResponseBody
-      lastETag = Some(res.getHeader("ETag"))
-      if (eventList.length > 0) lastId = Some(eventList.maxBy(e => e.id).id)
+        val requestId = res.getHeader("X-GitHub-Request-Id")
+        val responseBody = res.getResponseBody
+        lastETag = Some(res.getHeader("ETag"))
+        if (eventList.nonEmpty) lastId = Some(eventList.maxBy(e => e.id).id)
 
-      GitHubEventResponse(requestId, responseBody, eventList)
+        GitHubEventResponse(requestId, responseBody, eventList)
+      }
     }
-  }
+
 
   /**
    * Get the latest GitHub events from their API.
