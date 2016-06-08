@@ -1,5 +1,5 @@
-target
+**/target
 .idea
-data/stackexchange
-data/output
-src/main/resources/application.conf
+stackanalysis/data/stackexchange
+stackanalysis/data/output
+githubstream/src/main/resources/application.conf
