@@ -15,9 +15,9 @@ Skip to..
 
 This project contains an [Apache Spark](https://spark.apache.org/) driver application called `StackAnalysis`.  Instructions are provided on how to run the driver application locally or on an [Apache Mesos](http://mesos.apache.org/) cluster.  
 
-Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/learning-spark.html) I gave at the [Toronto Scala & Typesafe User Group](http://www.meetup.com/Toronto-Scala-Typesafe-User-Group/) (type `p` in presentation to see notes).
+Continue reading for more details or check out [the accompanying presentation](http://rawgit.com/seglo/learning-spark/master/presentation/spark-in-action/learning-spark.html) I gave at the [Scala Toronto](https://meetup.com/scalator) (type `p` in presentation to see notes).
 
-The Spark driver application itself is a relatively short **[StackAnalysis.scala](https://github.com/seglo/learning-spark/blob/master/src/main/scala/StackAnalysis.scala)** file in the respository.
+The Spark driver application itself is a relatively short **[StackAnalysis.scala](https://cdn.rawgit.com/seglo/learning-spark/master/stackanalysis/src/main/scala/com/seglo/learningspark/stackanalysis/StackAnalysis.scala)** file in the respository.
 
 ### Local
 
@@ -60,7 +60,7 @@ Sign up on [Google Cloud Compute](https://cloud.google.com/compute/) and click t
 
 Create a new project you will use for your development cluster.
 
-![Google Cloud Compute console](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/google_console.png)
+![Google Cloud Compute console](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/spark-in-action/google_console.png)
 
 ##### 2) Setup a Mesos cluster with Mesosphere
 
@@ -81,7 +81,7 @@ development-5159-5d7 us-central1-a n1-standard-2 10.8.67.247    104.154.xxx.xxx 
 
 A handy reference page from mesosphere with pertinent details about your cluster.  It also contains details on how to establish an OpenVPN VPN connection to it.
 
-![Mesosphere cluster page](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/mesosphere_cluster.png)
+![Mesosphere cluster page](https://raw.githubusercontent.com/seglo/learning-spark/master/presentation/spark-in-action/mesosphere_cluster.png)
 
 ##### 3) Attach some extra drive storage for large datasets
 
@@ -274,7 +274,7 @@ $ cat data/output/ScalaQuestionsByMonth.txt/*
 
 ### Top Co-Occuring Scala Tags
 
-[Complete list](https://raw.githubusercontent.com/seglo/learning-spark/master/data/output/ScalaTagCount-complete.txt)
+[Complete list](https://raw.githubusercontent.com/seglo/learning-spark/master/stackanalysis/data/output/ScalaTagCount-complete.txt)
 
 ```bash
 $ cat data/output/ScalaTagCount.txt/* | head -n 100
