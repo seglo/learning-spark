@@ -7,8 +7,8 @@ Exactly Once semantics with Kafka and Spark Streaming can be implemented as the 
 
 ## Pre-requisites
 
-1. Install `docker` and `docker-compose` (developed against version 1.11.1 and 1.6.2 respectively).  NOTE: When on linux add yourself to the docker group so you don't require `sudo` to execute these commands.
-2. Confirm `ADVERTISED_HOST` environment variable matches your docker host IP in `kafka` service located in `./demo/docker/sbt-docker-compose.yml`.  You can find out this IP with the command `ifconfig docker0`
+1. Install `docker` and `docker-compose` (developed against version 1.11.1 and 1.6.2 respectively).  NOTE: When on Linux add yourself to the docker group so you don't require `sudo` to execute these commands.
+2. Confirm `ADVERTISED_HOST` environment variable matches your docker host IP in `kafka` service located in `./docker/sbt-docker-compose.yml`.  On Linux you can find out this IP with the command `ifconfig docker0`.  On MacOSX you will need to use the docker-machine IP which can be found with the command `docker-machine ip`.
 
 Now you can bring the docker services up and perform ad hoc operations against them, or run the automated tests.
 
