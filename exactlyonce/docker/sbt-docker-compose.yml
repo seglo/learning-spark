@@ -1,0 +1,30 @@
+version: '2'
+services:
+  exactlyonce:
+    image: exactlyonce:1.0
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+    ports:
+      - "0:5005"
+    links:
+      - cassandra
+      - kafka
+  cassandra:
+    image: cassandra:2.1.14
+    ports:
+      - "7000:7000"
+      - "7001:7001"
+      - "7199:7199"
+      - "9042:9042"
+      - "9160:9160"
+  kafka:
+    # as of this writing, spotify/kafka:latest uses kafka 0.8.2.1.  spark-streaming-kafka doesn't fully support 0.9.0.0+
+    # yet, but it can be used if you want.  to do this, build the modified docker in ./demo/docker/kafka09 and reference
+    # it here as `kafka09:latest<localBuild>` (assuming you built with name kafka09)
+    image: spotify/kafka:latest
+    ports:
+      - "9092:9092"
+      - "2181:2181"
+    environment:
+      ADVERTISED_HOST: 192.168.99.100 # this must match the docker host ip
+      ADVERTISED_PORT: 9092

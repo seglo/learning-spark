@@ -16,3 +16,6 @@ lazy val stackanalysis = (project in file("stackanalysis"))
 
 lazy val githubstream = (project in file("githubstream"))
     .settings(commonSettings: _*)
+
+lazy val exactlyonce = (project in file("exactlyonce"))
+    .settings(commonSettings: _*)
