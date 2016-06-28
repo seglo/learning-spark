@@ -1,6 +1,8 @@
 Exactly Once Streaming with Kafka & Cassandra
 =============================================
 
+*To curtail any message delivery semantics debate please heed that this project defines implements exactly-once [as defined by Kafka's documentation](http://kafka.apache.org/documentation.html#semantics).  I am aware of [why you can't technically have exactly-once](http://bravenewgeek.com/you-cannot-have-exactly-once-delivery/), so if you like, you can think of this as at least once with deduplication assuming guaranteed delivery order of messages in a partition.*
+
 Exactly Once semantics with Kafka and Spark Streaming can be implemented as the Kafka documentation recommends: by storing the partition and offset with the data once it's been processed, and then manage the topic's partition and offset on the event of failure/restart. On startup it will query Cassandra for the last offset for each partition and then begin processing from the next offset. To maintain Exactly Once across a whole distributed infrastructure takes some work as you have to manage partition and offset each step of the way, but it can be done fairly easily if designed up front.
 
 # Developer Setup
