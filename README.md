@@ -5,7 +5,7 @@ This repo contains various Spark projects I've created to help learn spark for m
 
 ## [Exactly Once Message Delivery with Kafka & Cassandra](exactlyonce/)
 
-The [`exactlyonce`](exactlyonce/) project is a demonstration of implementing Exactly Once message delivery semantics with Spark Streaming, Kafka, and Cassandra.
+The [`exactlyonce`](exactlyonce/) project is a demonstration of implementing Kafka's Exactly Once message delivery semantics with Spark Streaming, Kafka, and Cassandra.
 
 ## [StackOverflow.com Analysis](stackanalysis/)
 
